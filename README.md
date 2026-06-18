@@ -4,6 +4,19 @@ AVP-Py est un lecteur vidéo autonome pour Raspberry Pi 5 destiné au digital si
 
 Il synchronise un dossier Google Drive avec un dossier local via `rclone`, génère les miniatures et métadonnées avec `ffmpeg/ffprobe`, puis lit les vidéos en boucle avec `mpv` selon des horaires configurables depuis une interface web locale.
 
+## Sommaire
+
+- [Choix techniques](#choix-techniques)
+- [Accès web](#accès-web)
+- [Configuration Wi-Fi sur site](#configuration-wi-fi-sur-site)
+- [Installation rapide sur Raspberry Pi](#installation-rapide-sur-raspberry-pi)
+- [Mise à jour](#mise-à-jour)
+- [Configuration Google Drive](#configuration-google-drive)
+- [Fonctionnement](#fonctionnement)
+- [Logs](#logs)
+- [Service systemd](#service-systemd)
+- [Développement local](#développement-local)
+
 ## Choix techniques
 
 - OS recommandé : Raspberry Pi OS Lite 64-bit
@@ -67,6 +80,8 @@ chmod +x install-avp-py.sh
 ./install-avp-py.sh https://github.com/CHANGE_ME/AVP-Py.git
 ```
 
+Script source : [`scripts/install.sh`](scripts/install.sh).
+
 Pour définir le nom `.local` pendant l'installation :
 
 ```bash
@@ -89,7 +104,7 @@ Depuis le Raspberry Pi :
 /opt/avp-py/app/scripts/update.sh
 ```
 
-Le script fait un `git pull`, met à jour les dépendances Python et redémarre le service.
+Le script [`scripts/update.sh`](scripts/update.sh) fait un `git pull`, met à jour les dépendances Python et redémarre le service.
 
 ## Configuration Google Drive
 
@@ -132,6 +147,8 @@ Ils sont aussi consultables depuis `Paramètres > Logs`.
 
 ## Service systemd
 
+Le service installé est basé sur [`systemd/avp-py.service`](systemd/avp-py.service).
+
 Commandes utiles :
 
 ```bash
@@ -151,7 +168,13 @@ pip install -r requirements.txt
 uvicorn avppy.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
+Les dépendances Python sont listées dans [`requirements.txt`](requirements.txt). Le guide Raspberry Pi complet est disponible dans [`docs/INSTALL_RPI.md`](docs/INSTALL_RPI.md).
+
 Sous Windows, les commandes `mpv` via socket Unix sont ignorées par le contrôleur. L'interface web et la configuration restent testables.
+
+<br/>
+<br/>
+<br/>
 
 <div align="center">
   <table>
