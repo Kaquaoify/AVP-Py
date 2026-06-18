@@ -1,21 +1,41 @@
 # AVP-Py
 
+<div align="center">
+  <strong>Lecteur vidéo autonome pour Raspberry Pi 5 destiné au digital signage.</strong>
+  <br>
+  <sub>Synchronisation Google Drive, lecture plein écran, horaires programmables et administration web locale.</sub>
+</div>
+
+<br>
+
 AVP-Py est un lecteur vidéo autonome pour Raspberry Pi 5 destiné au digital signage.
 
 Il synchronise un dossier Google Drive avec un dossier local via `rclone`, génère les miniatures et métadonnées avec `ffmpeg/ffprobe`, puis lit les vidéos en boucle avec `mpv` selon des horaires configurables depuis une interface web locale.
 
+---
+
 ## Sommaire
 
-- [Choix techniques](#choix-techniques)
-- [Accès web](#accès-web)
-- [Configuration Wi-Fi sur site](#configuration-wi-fi-sur-site)
-- [Installation rapide sur Raspberry Pi](#installation-rapide-sur-raspberry-pi)
-- [Mise à jour](#mise-à-jour)
-- [Configuration Google Drive](#configuration-google-drive)
-- [Fonctionnement](#fonctionnement)
-- [Logs](#logs)
-- [Service systemd](#service-systemd)
-- [Développement local](#développement-local)
+<table>
+  <tr>
+    <td width="50%">
+      <a href="#choix-techniques">Choix techniques</a><br>
+      <a href="#accès-web">Accès web</a><br>
+      <a href="#configuration-wi-fi-sur-site">Configuration Wi-Fi sur site</a><br>
+      <a href="#installation-rapide-sur-raspberry-pi">Installation rapide sur Raspberry Pi</a><br>
+      <a href="#mise-à-jour">Mise à jour</a>
+    </td>
+    <td width="50%">
+      <a href="#configuration-google-drive">Configuration Google Drive</a><br>
+      <a href="#fonctionnement">Fonctionnement</a><br>
+      <a href="#logs">Logs</a><br>
+      <a href="#service-systemd">Service systemd</a><br>
+      <a href="#développement-local">Développement local</a><br>
+    </td>
+  </tr>
+</table>
+
+---
 
 ## Choix techniques
 
@@ -27,6 +47,8 @@ Il synchronise un dossier Google Drive avec un dossier local via `rclone`, gén�
 - Miniatures et métadonnées : `ffmpeg` et `ffprobe`
 - Démarrage automatique : service `systemd`
 - Configuration réseau de secours : NetworkManager + `nmcli`
+
+---
 
 ## Accès web
 
@@ -41,6 +63,8 @@ Mot de passe par défaut :
 ```text
 1234
 ```
+
+---
 
 ## Configuration Wi-Fi sur site
 
@@ -62,13 +86,17 @@ Depuis un téléphone ou un ordinateur, connecte-toi à ce Wi-Fi puis ouvre :
 http://10.42.0.1:8000/setup/wifi
 ```
 
-La page permet de choisir le Wi-Fi client, d'entrer son mot de passe et de connecter le Raspberry Pi. Une fois la connexion réussie, le hotspot de secours est coupé et l'app redevient accessible via :
+La page permet de choisir le Wi-Fi client, d'entrer son mot de passe et de connecter le Raspberry Pi.
+
+Une fois la connexion réussie, le hotspot de secours est coupé et l'app redevient accessible via :
 
 ```text
 http://nom-appareil.local:8000
 ```
 
 Le comportement est réglable depuis `Paramètres > Réseau`.
+
+---
 
 ## Installation rapide sur Raspberry Pi
 
@@ -96,6 +124,8 @@ http://hall-entree.local:8000
 
 Remplace `CHANGE_ME` par l'organisation ou l'utilisateur GitHub réel quand le dépôt est créé.
 
+---
+
 ## Mise à jour
 
 Depuis le Raspberry Pi :
@@ -105,6 +135,8 @@ Depuis le Raspberry Pi :
 ```
 
 Le script [`scripts/update.sh`](scripts/update.sh) fait un `git pull`, met à jour les dépendances Python et redémarre le service.
+
+---
 
 ## Configuration Google Drive
 
@@ -125,6 +157,8 @@ Puis utiliser le nom du remote dans l'interface web, par exemple `gdrive`.
 
 Si tu colles un contenu `rclone.conf` dans l'interface web, AVP-Py l'écrit dans `/var/lib/avp-py/rclone.conf` et l'utilise pour les tests et synchronisations.
 
+---
+
 ## Fonctionnement
 
 - Les médias sont triés par nom de fichier.
@@ -135,6 +169,8 @@ Si tu colles un contenu `rclone.conf` dans l'interface web, AVP-Py l'écrit dans
 - Un redémarrage quotidien est activé par défaut à `06:00` et peut être désactivé.
 - Si aucun réseau LAN/Wi-Fi connu n'est disponible, le Pi démarre un hotspot de configuration.
 
+---
+
 ## Logs
 
 Les logs sont disponibles dans :
@@ -144,6 +180,8 @@ Les logs sont disponibles dans :
 ```
 
 Ils sont aussi consultables depuis `Paramètres > Logs`.
+
+---
 
 ## Service systemd
 
@@ -157,6 +195,8 @@ sudo systemctl restart avp-py
 sudo journalctl -u avp-py -f
 ```
 
+---
+
 ## Développement local
 
 Sur PC :
@@ -168,13 +208,16 @@ pip install -r requirements.txt
 uvicorn avppy.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Les dépendances Python sont listées dans [`requirements.txt`](requirements.txt). Le guide Raspberry Pi complet est disponible dans [`docs/INSTALL_RPI.md`](docs/INSTALL_RPI.md).
+Les dépendances Python sont listées dans [`requirements.txt`](requirements.txt).
+
+Le guide Raspberry Pi complet est disponible dans [`docs/INSTALL_RPI.md`](docs/INSTALL_RPI.md).
 
 Sous Windows, les commandes `mpv` via socket Unix sont ignorées par le contrôleur. L'interface web et la configuration restent testables.
+<br/>
 
 <br/>
 <br/>
-<br/>
+
 
 <div align="center">
   <table>
