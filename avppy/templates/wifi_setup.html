@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AVP-Py - Wi-Fi</title>
+    <link rel="stylesheet" href="/static/app.css">
+  </head>
+  <body class="setup-page">
+    <main class="setup-shell">
+      <section class="panel stack">
+        <h1>Configuration Wi-Fi</h1>
+        <div class="status-line embedded">
+          <span>Hotspot: {{ network_status.hotspot_ssid }}</span>
+          <span>Interface: {{ network_status.interface }}</span>
+        </div>
+        <form method="post" action="/setup/wifi" class="stack">
+          <label>Réseau détecté
+            <select name="ssid">
+              <option value="">Choisir un réseau</option>
+              {% for wifi in networks %}
+                <option value="{{ wifi.ssid }}">{{ wifi.ssid }} - {{ wifi.signal }}%{% if wifi.security %} - {{ wifi.security }}{% endif %}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>SSID manuel <input name="custom_ssid" placeholder="Si le réseau est masqué"></label>
+          <label>Mot de passe Wi-Fi <input name="wifi_password" type="password" autocomplete="new-password"></label>
+          <div class="button-row">
+            <button type="submit">Connecter</button>
+            {% if not setup_mode %}
+              <a class="button secondary" href="/settings/network">Retour</a>
+            {% endif %}
+          </div>
+        </form>
+        {% if message %}
+          <pre class="console compact">{{ message }}</pre>
+        {% endif %}
+      </section>
+    </main>
+  </body>
+</html>
+

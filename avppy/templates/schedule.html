@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Horaires{% endblock %}
+{% block content %}
+<form method="post" action="/settings/schedule" class="panel stack">
+  <h1>Horaires</h1>
+  <fieldset class="days">
+    <legend>Jours actifs</legend>
+    {% set labels = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"] %}
+    {% for label in labels %}
+      <label><input type="checkbox" name="playback_days" value="{{ loop.index0 }}" {% if loop.index0 in config.playback_days %}checked{% endif %}> {{ label }}</label>
+    {% endfor %}
+  </fieldset>
+  <div class="form-grid">
+    <label>Début lecture <input name="playback_start" type="time" value="{{ config.playback_start }}" required></label>
+    <label>Fin lecture <input name="playback_end" type="time" value="{{ config.playback_end }}" required></label>
+    <label>Synchro médias <input name="sync_time" type="time" value="{{ config.sync_time }}" required></label>
+    <label>Redémarrage <input name="reboot_time" type="time" value="{{ config.reboot_time }}" required></label>
+  </div>
+  <label class="checkline"><input name="reboot_enabled" type="checkbox" {% if config.reboot_enabled %}checked{% endif %}> Redémarrage quotidien activé</label>
+  <div class="button-row">
+    <button type="submit">Sauvegarder</button>
+    <a class="button secondary" href="/settings">Retour</a>
+  </div>
+</form>
+{% endblock %}
+

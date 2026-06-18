@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Accueil{% endblock %}
+{% block content %}
+<section class="toolbar">
+  <form method="post" action="/control" class="button-row">
+    <button name="action" value="previous" type="submit">Précédent</button>
+    <button name="action" value="play" type="submit">Play</button>
+    <button name="action" value="pause" type="submit">Pause</button>
+    <button name="action" value="next" type="submit">Suivant</button>
+  </form>
+  <form method="post" action="/volume" class="volume">
+    <label for="volume_value">Volume</label>
+    <input id="volume_value" name="volume_value" type="range" min="0" max="100" value="{{ config.volume }}" oninput="this.nextElementSibling.value=this.value">
+    <output>{{ config.volume }}</output>
+    <button type="submit">Sauver</button>
+  </form>
+  <a class="button" href="/settings">Paramètres</a>
+</section>
+
+<section class="status-line">
+  <span>Lecteur: {% if player_status.running %}actif{% else %}inactif{% endif %}</span>
+  <span>{{ media|length }} média(s)</span>
+  <span>Lecture {{ config.playback_start }}-{{ config.playback_end }}</span>
+</section>
+
+<section class="media-list">
+  {% for item in media %}
+  <article class="media-row">
+    <div class="rank">{{ item.index }}</div>
+    {% if item.thumbnail %}
+      <img src="/thumbs/{{ item.thumbnail }}" alt="">
+    {% else %}
+      <div class="thumb-placeholder"></div>
+    {% endif %}
+    <div class="media-details">
+      <h2>{{ item.title }}</h2>
+      <dl>
+        <div><dt>Durée</dt><dd>{{ item.duration or "" }} s</dd></div>
+        <div><dt>Codec</dt><dd>{{ item.codec or "" }}</dd></div>
+        <div><dt>Format</dt><dd>{{ item.format or "" }}</dd></div>
+        <div><dt>Résolution</dt><dd>{{ item.resolution or "" }}</dd></div>
+        <div><dt>Container</dt><dd>{{ item.container or "" }}</dd></div>
+      </dl>
+    </div>
+  </article>
+  {% else %}
+  <p class="empty">Aucun média local.</p>
+  {% endfor %}
+</section>
+{% endblock %}
+

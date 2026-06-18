@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Dossiers{% endblock %}
+{% block content %}
+<form method="post" action="/settings/folders" class="panel stack">
+  <h1>Configuration des dossiers</h1>
+  <div class="form-grid">
+    <label>Dossier local <input name="local_media_dir" value="{{ config.local_media_dir }}" required></label>
+    <label>Remote rclone <input name="rclone_remote" value="{{ config.rclone_remote }}" required></label>
+    <label>Chemin Google Drive <input name="rclone_path" value="{{ config.rclone_path }}"></label>
+    <label>Arguments mpv <input name="mpv_extra_args" value="{{ config.mpv_extra_args }}"></label>
+  </div>
+  <label>rclone.conf
+    <textarea name="rclone_config_text" rows="10" spellcheck="false">{{ config.rclone_config_text }}</textarea>
+  </label>
+  <div class="button-row">
+    <button name="action" value="save" type="submit">Sauvegarder</button>
+    <button name="action" value="test" type="submit">Tester la connexion</button>
+    <button name="action" value="sync" type="submit">Synchroniser maintenant</button>
+    <a class="button secondary" href="/settings">Retour</a>
+  </div>
+  {% if message %}
+    <pre class="console">{{ message }}</pre>
+  {% endif %}
+</form>
+{% endblock %}
+

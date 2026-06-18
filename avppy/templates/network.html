@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Réseau{% endblock %}
+{% block content %}
+<section class="panel stack">
+  <h1>Réseau</h1>
+  <div class="status-line embedded">
+    <span>Connexion: {% if network_status.connected %}active{% else %}absente{% endif %}</span>
+    <span>Setup: {% if network_status.setup_active %}actif{% else %}inactif{% endif %}</span>
+    <span>SSID setup: {{ network_status.hotspot_ssid }}</span>
+  </div>
+
+  <form method="post" action="/settings/network" class="stack">
+    <div class="form-grid">
+      <label>Interface Wi-Fi <input name="network_interface" value="{{ config.network_interface }}" required></label>
+      <label>Délai avant setup <input name="network_check_delay_seconds" type="number" min="10" max="600" value="{{ config.network_check_delay_seconds }}" required></label>
+      <label>Préfixe SSID setup <input name="setup_ssid_prefix" value="{{ config.setup_ssid_prefix }}" maxlength="20" required></label>
+      <label>Mot de passe setup <input name="setup_wifi_password" value="{{ config.setup_wifi_password }}" minlength="8" maxlength="63" required></label>
+    </div>
+    <label class="checkline"><input name="network_setup_enabled" type="checkbox" {% if config.network_setup_enabled %}checked{% endif %}> Hotspot de secours activé</label>
+    <div class="button-row">
+      <button name="action" value="save" type="submit">Sauvegarder</button>
+      <button name="action" value="start_setup" type="submit">Démarrer setup</button>
+      <button name="action" value="stop_setup" type="submit">Arrêter setup</button>
+      <a class="button secondary" href="/settings">Retour</a>
+    </div>
+  </form>
+
+  {% if message %}
+    <pre class="console compact">{{ message }}</pre>
+  {% endif %}
+
+  <div class="stack">
+    <h2>Interfaces</h2>
+    <table>
+      <thead><tr><th>Interface</th><th>Type</th><th>État</th><th>Connexion</th></tr></thead>
+      <tbody>
+        {% for device in network_status.devices %}
+          <tr><td>{{ device.device }}</td><td>{{ device.type }}</td><td>{{ device.state }}</td><td>{{ device.connection }}</td></tr>
+        {% else %}
+          <tr><td colspan="4">Aucune information réseau disponible.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

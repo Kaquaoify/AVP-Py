@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Logs{% endblock %}
+{% block content %}
+<section class="panel stack">
+  <h1>Logs</h1>
+  <nav class="log-tabs">
+    {% for file in files %}
+      <a {% if file == selected %}class="active"{% endif %} href="/settings/logs?file={{ file }}">{{ file }}</a>
+    {% endfor %}
+  </nav>
+  <pre class="console log-view">{{ content }}</pre>
+  <a class="button secondary" href="/settings">Retour</a>
+</section>
+{% endblock %}
+

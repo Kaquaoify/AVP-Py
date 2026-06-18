@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Admin{% endblock %}
+{% block content %}
+<form method="post" action="/settings/admin" class="panel stack">
+  <h1>Admin</h1>
+  <label>Nom appareil <input name="device_name" value="{{ config.device_name }}" required></label>
+  <label>Nouveau mot de passe <input name="new_password" type="password" autocomplete="new-password"></label>
+  <div class="button-row">
+    <button type="submit">Sauvegarder</button>
+    <a class="button secondary" href="/settings">Retour</a>
+  </div>
+  {% if message %}<p class="success">{{ message }}</p>{% endif %}
+</form>
+{% endblock %}
+

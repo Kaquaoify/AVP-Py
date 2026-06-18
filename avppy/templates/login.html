@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AVP-Py</title>
+    <link rel="stylesheet" href="/static/app.css">
+  </head>
+  <body class="login-page">
+    <main class="login-box">
+      <h1>AVP-Py</h1>
+      <form method="post" action="/login" class="stack">
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" autofocus required>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+        <button type="submit">Entrer</button>
+      </form>
+    </main>
+  </body>
+</html>
+
