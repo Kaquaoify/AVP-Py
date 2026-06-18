@@ -16,24 +16,9 @@ Il synchronise un dossier Google Drive avec un dossier local via `rclone`, gén�
 
 ## Sommaire
 
-<table>
-  <tr>
-    <td width="50%">
-      <a href="#choix-techniques">Choix techniques</a><br>
-      <a href="#accès-web">Accès web</a><br>
-      <a href="#configuration-wi-fi-sur-site">Configuration Wi-Fi sur site</a><br>
-      <a href="#installation-rapide-sur-raspberry-pi">Installation rapide sur Raspberry Pi</a><br>
-      <a href="#mise-à-jour">Mise à jour</a>
-    </td>
-    <td width="50%">
-      <a href="#configuration-google-drive">Configuration Google Drive</a><br>
-      <a href="#fonctionnement">Fonctionnement</a><br>
-      <a href="#logs">Logs</a><br>
-      <a href="#service-systemd">Service systemd</a><br>
-      <a href="#développement-local">Développement local</a><br>
-    </td>
-  </tr>
-</table>
+[Choix techniques](#choix-techniques) · [Accès web](#accès-web) · [Configuration Wi-Fi sur site](#configuration-wi-fi-sur-site) · [Installation Raspberry Pi](#installation-rapide-sur-raspberry-pi) · [Mise à jour](#mise-à-jour)
+
+[Configuration Google Drive](#configuration-google-drive) · [Fonctionnement](#fonctionnement) · [Logs](#logs) · [Service systemd](#service-systemd) · [Développement local](#développement-local) · [Crédit](#crédit-de-développement)
 
 ---
 
