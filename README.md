@@ -152,3 +152,14 @@ uvicorn avppy.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Sous Windows, les commandes `mpv` via socket Unix sont ignorées par le contrôleur. L'interface web et la configuration restent testables.
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <strong>Développé avec l'aide de Codex et ChatGPT</strong><br>
+        <sub>Architecture, implémentation et documentation assistées par OpenAI Codex.</sub>
+      </td>
+    </tr>
+  </table>
+</div>
