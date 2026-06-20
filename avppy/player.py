@@ -36,6 +36,8 @@ class PlayerController:
         if self.ipc_path.exists():
             self.ipc_path.unlink()
 
+        mpv_log_path = DATA_DIR / "logs" / "mpv.log"
+        mpv_log_path.parent.mkdir(parents=True, exist_ok=True)
         args = [
             "mpv",
             "--idle=yes",
@@ -47,14 +49,14 @@ class PlayerController:
             "--osd-level=0",
             "--cursor-autohide=always",
             f"--input-ipc-server={self.ipc_path}",
-            "--background=black",
+            "--background=color",
+            "--background-color=#000000",
+            f"--log-file={mpv_log_path}",
         ]
         extra_args = (config.get("mpv_extra_args") or "").split()
         args.extend(extra_args)
 
         LOGGER.info("Starting mpv idle screen")
-        mpv_log_path = DATA_DIR / "logs" / "mpv.log"
-        mpv_log_path.parent.mkdir(parents=True, exist_ok=True)
         with mpv_log_path.open("a", encoding="utf-8") as mpv_log:
             self.process = subprocess.Popen(
                 args,
