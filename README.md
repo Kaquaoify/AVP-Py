@@ -107,6 +107,34 @@ L'adresse sera alors :
 http://hall-entree.local:8000
 ```
 
+### Boîtier Argon40
+
+L'installation standard installe aussi le logiciel officiel Argon40 depuis :
+
+```text
+https://download.argon40.com/argon1.sh
+```
+
+Il configure le service `argononed` utilisé par le ventilateur et le bouton
+d'alimentation des boîtiers Argon ONE, notamment le One V3 pour Raspberry Pi 5. Le
+script du fabricant installe ses dépendances, active les interfaces matérielles utiles
+et peut mettre à jour les paquets ainsi que l'EEPROM du Raspberry Pi.
+
+Pour désactiver cette étape sur un appareil qui n'utilise pas de boîtier Argon40 :
+
+```bash
+AVP_INSTALL_ARGON40=0 ./install-avp-py.sh https://github.com/CHANGE_ME/AVP-Py.git
+```
+
+Si le logiciel Argon40 est déjà présent, l'installateur AVP-Py le détecte et ne le
+réinstalle pas. Après l'installation, ses réglages sont accessibles avec :
+
+```bash
+argonone-config
+```
+
+Un redémarrage du Raspberry Pi est recommandé après la première installation.
+
 Remplace `CHANGE_ME` par l'organisation ou l'utilisateur GitHub réel quand le dépôt est créé.
 
 ---

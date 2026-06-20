@@ -22,9 +22,12 @@ class PlayerController:
         self.playlist_path = DATA_DIR / "playlist.m3u"
 
     def status(self) -> dict[str, Any]:
+        running = self.process is not None and self.process.poll() is None
+        current_path = self.get_property("path") if running else None
         return {
-            "running": self.process is not None and self.process.poll() is None,
+            "running": running,
             "ipc": str(self.ipc_path),
+            "current_media": Path(str(current_path)).name if current_path else "",
         }
 
     def ensure_idle(self, config: dict[str, Any]) -> None:
@@ -107,6 +110,33 @@ class PlayerController:
         except OSError as exc:
             LOGGER.warning("mpv IPC command failed %s: %s", command, exc)
             return False
+
+    def get_property(self, name: str) -> Any | None:
+        if os.name == "nt":
+            return None
+        request_id = 1
+        payload = {
+            "command": ["get_property", name],
+            "request_id": request_id,
+        }
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+                sock.settimeout(1)
+                sock.connect(str(self.ipc_path))
+                sock.sendall((json.dumps(payload) + "\n").encode("utf-8"))
+                with sock.makefile("r", encoding="utf-8") as response:
+                    for _ in range(10):
+                        line = response.readline()
+                        if not line:
+                            break
+                        message = json.loads(line)
+                        if message.get("request_id") == request_id:
+                            if message.get("error") == "success":
+                                return message.get("data")
+                            return None
+        except (OSError, json.JSONDecodeError) as exc:
+            LOGGER.debug("mpv property query failed %s: %s", name, exc)
+        return None
 
     def _wait_for_ipc(self) -> None:
         deadline = time.monotonic() + 5

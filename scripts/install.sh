@@ -6,6 +6,8 @@ INSTALL_DIR="${INSTALL_DIR:-/opt/avp-py/app}"
 DATA_DIR="${AVPPY_DATA_DIR:-/var/lib/avp-py}"
 RUN_USER="${AVPPY_USER:-${SUDO_USER:-$USER}}"
 SERVICE_FILE="/etc/systemd/system/avp-py.service"
+ARGON40_INSTALLER_URL="https://download.argon40.com/argon1.sh"
+AVP_INSTALL_ARGON40="${AVP_INSTALL_ARGON40:-1}"
 
 if [[ "${EUID}" -ne 0 ]]; then
   SUDO="sudo"
@@ -13,10 +15,40 @@ else
   SUDO=""
 fi
 
+install_argon40() {
+  case "${AVP_INSTALL_ARGON40,,}" in
+    0|false|no|off)
+      echo "Skipping Argon40 installation (AVP_INSTALL_ARGON40=${AVP_INSTALL_ARGON40})."
+      return
+      ;;
+  esac
+
+  if [[ -f /etc/argon/argon-config || -f /lib/systemd/system/argononed.service ]]; then
+    echo "Argon40 software is already installed; skipping vendor installer."
+    return
+  fi
+
+  echo "Installing Argon40 fan and power-button software..."
+  local installer
+  installer="$(mktemp)"
+  if ! curl --proto '=https' --tlsv1.2 -fsSL "${ARGON40_INSTALLER_URL}" -o "${installer}"; then
+    rm -f "${installer}"
+    echo "Could not download the Argon40 installer." >&2
+    return 1
+  fi
+  if ! bash "${installer}"; then
+    rm -f "${installer}"
+    echo "Argon40 installation failed." >&2
+    return 1
+  fi
+  rm -f "${installer}"
+}
+
 echo "Installing AVP-Py for user ${RUN_USER}"
 
 ${SUDO} apt-get update
-${SUDO} apt-get install -y git python3 python3-venv python3-pip rclone ffmpeg mpv avahi-daemon network-manager
+${SUDO} apt-get install -y curl git python3 python3-venv python3-pip rclone ffmpeg mpv avahi-daemon network-manager
+install_argon40
 ${SUDO} systemctl enable NetworkManager.service
 ${SUDO} systemctl start NetworkManager.service
 

@@ -31,6 +31,27 @@ AVP_HOSTNAME=hall-entree ./install-avp-py.sh https://github.com/CHANGE_ME/AVP-Py
 
 Remplace `hall-entree` par le nom lisible de l'appareil.
 
+### Boîtier Argon40 One V3
+
+Le script AVP-Py installe par défaut le logiciel officiel Argon40 qui gère le
+ventilateur et le bouton d'alimentation. Il ne relance pas l'installateur si
+`argononed` est déjà installé.
+
+Pour ignorer cette installation sur un Raspberry Pi sans boîtier Argon40 :
+
+```bash
+AVP_INSTALL_ARGON40=0 AVP_HOSTNAME=hall-entree ./install-avp-py.sh https://github.com/CHANGE_ME/AVP-Py.git
+```
+
+Après installation, configure au besoin la courbe du ventilateur avec :
+
+```bash
+argonone-config
+```
+
+Le script Argon40 peut mettre à jour les paquets, l'EEPROM et la configuration
+matérielle. Redémarre le Raspberry Pi après la première installation.
+
 ## 4. Ouvrir l'interface
 
 Depuis un navigateur sur le même réseau :

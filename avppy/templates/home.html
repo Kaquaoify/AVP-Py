@@ -19,10 +19,29 @@
 </section>
 
 <section class="status-line">
-  <span>Lecteur: {% if player_status.running %}actif{% else %}inactif{% endif %}</span>
+  <span>
+    Lecteur: <span id="player-state">{% if player_status.running %}actif{% else %}inactif{% endif %}</span>
+    · Vidéo actuelle: <span id="current-media">{{ player_status.current_media or "aucune" }}</span>
+  </span>
   <span>{{ media|length }} média(s)</span>
   <span>Lecture {{ config.playback_start }}-{{ config.playback_end }}</span>
 </section>
+
+<script>
+  async function refreshPlayerStatus() {
+    try {
+      const response = await fetch('/health', { cache: 'no-store' });
+      if (!response.ok) return;
+      const status = await response.json();
+      document.getElementById('player-state').textContent = status.player.running ? 'actif' : 'inactif';
+      document.getElementById('current-media').textContent = status.player.current_media || 'aucune';
+    } catch (_) {
+      // La dernière valeur connue reste affichée si le Pi est momentanément indisponible.
+    }
+  }
+
+  setInterval(refreshPlayerStatus, 3000);
+</script>
 
 <section class="media-list">
   {% for item in media %}
