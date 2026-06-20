@@ -6,6 +6,7 @@ import re
 import subprocess
 import threading
 import time
+import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
@@ -124,10 +125,44 @@ def setup_ssid(config: dict[str, Any]) -> str:
 
 
 def slugify(value: str) -> str:
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
     value = value.strip().lower()
     value = re.sub(r"[^a-z0-9-]+", "-", value)
     value = re.sub(r"-+", "-", value).strip("-")
     return value or "avp-py"
+
+
+def set_device_hostname(value: str) -> CommandResult:
+    hostname = slugify(value)[:63].strip("-") or "avp-py"
+    if os.name == "nt":
+        return CommandResult(True, hostname)
+
+    try:
+        result = subprocess.run(
+            ["sudo", "hostnamectl", "set-hostname", hostname],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except FileNotFoundError:
+        return CommandResult(False, "sudo ou hostnamectl est introuvable.")
+    except subprocess.TimeoutExpired:
+        return CommandResult(False, "Le changement de nom d'hôte a dépassé le délai autorisé.")
+
+    output = "\n".join(part for part in (result.stdout, result.stderr) if part).strip()
+    if result.returncode != 0:
+        return CommandResult(False, output or f"Erreur hostnamectl code {result.returncode}")
+
+    try:
+        subprocess.run(
+            ["sudo", "systemctl", "restart", "avahi-daemon.service"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        LOGGER.warning("Hostname changed, but Avahi could not be restarted")
+    return CommandResult(True, hostname)
 
 
 def has_network_connection() -> bool:

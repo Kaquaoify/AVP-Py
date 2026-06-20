@@ -3,7 +3,14 @@
 {% block content %}
 <form method="post" action="/settings/admin" class="panel stack">
   <h1>Admin</h1>
-  <label>Nom appareil <input name="device_name" value="{{ config.device_name }}" required></label>
+  <label>Nom de l'appareil
+    <input name="device_name" value="{{ config.device_name }}" maxlength="63" required>
+  </label>
+  <p class="muted">
+    Ce nom définit aussi l'adresse réseau :
+    <code>http://{{ config.device_name }}.local:8000</code>.
+    Les espaces et accents seront convertis en tirets et caractères simples.
+  </p>
   <label>Nouveau mot de passe <input name="new_password" type="password" autocomplete="new-password"></label>
   <div class="button-row">
     <button type="submit">Sauvegarder</button>
@@ -12,4 +19,3 @@
   {% if message %}<p class="success">{{ message }}</p>{% endif %}
 </form>
 {% endblock %}
-

@@ -72,6 +72,8 @@ python3 -m venv "${INSTALL_DIR}/.venv"
 ${SUDO} usermod -aG audio,video,input,render "${RUN_USER}" || true
 {
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/systemctl reboot, /bin/systemctl reboot"
+  echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/systemctl restart avahi-daemon.service"
+  echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/hostnamectl set-hostname *"
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/nmcli"
 } | ${SUDO} tee /etc/sudoers.d/avp-py >/dev/null
 ${SUDO} chmod 0440 /etc/sudoers.d/avp-py

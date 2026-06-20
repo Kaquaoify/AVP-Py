@@ -19,6 +19,8 @@ ${SUDO} systemctl enable NetworkManager.service
 ${SUDO} systemctl start NetworkManager.service
 {
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/systemctl reboot, /bin/systemctl reboot"
+  echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/systemctl restart avahi-daemon.service"
+  echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/hostnamectl set-hostname *"
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/nmcli"
 } | ${SUDO} tee /etc/sudoers.d/avp-py >/dev/null
 ${SUDO} chmod 0440 /etc/sudoers.d/avp-py

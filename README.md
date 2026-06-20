@@ -49,6 +49,15 @@ Mot de passe par défaut :
 1234
 ```
 
+Le nom réseau peut ensuite être modifié dans `Paramètres > Admin`. Par exemple,
+le nom `entree` rend l'interface accessible à l'adresse :
+
+```text
+http://entree.local:8000
+```
+
+Le changement met aussi à jour le hostname Linux et relance l'annonce mDNS Avahi.
+
 ---
 
 ## Configuration Wi-Fi sur site

@@ -36,7 +36,7 @@ from .media import (
     scan_media,
     write_playlist,
 )
-from .network import connect_wifi, network, scan_wifi
+from .network import connect_wifi, network, scan_wifi, set_device_hostname, slugify
 from .player import player
 from .scheduler import scheduler
 from .sync import sync_now, test_connection
@@ -572,14 +572,27 @@ async def save_admin(request: Request):
     if login_redirect := require_login(request, config):
         return login_redirect
     form = await request.form()
-    changes = {"device_name": str(form.get("device_name", config["device_name"])).strip() or "avp-py"}
+    requested_name = str(form.get("device_name", config["device_name"])).strip() or "avp-py"
+    device_name = slugify(requested_name)[:63].strip("-") or "avp-py"
+    changes = {"device_name": device_name}
+    message = "Paramètres sauvegardés."
+    if device_name != config.get("device_name"):
+        result = set_device_hostname(device_name)
+        if result.ok:
+            message = (
+                f"Nom d'appareil modifié. Nouvelle adresse : "
+                f"http://{device_name}.local:8000"
+            )
+        else:
+            changes.pop("device_name")
+            message = f"Impossible de modifier le nom d'hôte : {result.output}"
     new_password = str(form.get("new_password", "")).strip()
     if new_password:
         changes["admin_password_hash"] = hash_password(new_password)
     config = update_config(changes)
     return templates.TemplateResponse(
         "admin.html",
-        {"request": request, "config": config, "message": "Paramètres sauvegardés."},
+        {"request": request, "config": config, "message": message},
     )
 
 
