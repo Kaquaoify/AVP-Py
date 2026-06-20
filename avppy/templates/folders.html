@@ -3,13 +3,40 @@
 {% block content %}
 <form method="post" action="/settings/folders" class="panel stack">
   <h1>Configuration des dossiers</h1>
+  <details class="help-box" open>
+    <summary>Comment connecter Google Drive&nbsp;?</summary>
+    <div class="stack help-content">
+      <p>
+        AVP-Py attend le contenu complet d'un fichier <code>rclone.conf</code>.
+        Ce contenu inclut le token d'autorisation Google&nbsp;: ne le partage jamais et ne
+        l'envoie pas dans des captures d'écran ou des logs.
+      </p>
+      <ol>
+        <li>Sur un ordinateur avec un navigateur, installe <a href="https://rclone.org/downloads/" target="_blank" rel="noopener">rclone</a>.</li>
+        <li>Lance <code>rclone config</code> dans un terminal.</li>
+        <li>Choisis <code>n</code> pour créer un remote et nomme-le <code>gdrive</code>.</li>
+        <li>Choisis le stockage <code>drive</code> (Google Drive).</li>
+        <li>Sauf besoin particulier, laisse Client ID et Client Secret vides, choisis l'accès complet à Drive, puis refuse la configuration avancée.</li>
+        <li>Accepte l'authentification automatique. Dans le navigateur, connecte le compte Google qui peut consulter le dossier de vidéos.</li>
+        <li>Termine l'assistant, puis lance <code>rclone config file</code> pour afficher l'emplacement de <code>rclone.conf</code>.</li>
+        <li>Ouvre ce fichier, copie tout le bloc <code>[gdrive]</code>, puis colle-le dans le champ «&nbsp;Contenu complet de rclone.conf&nbsp;» ci-dessous.</li>
+        <li>Garde <code>gdrive</code> comme nom du remote, indique le chemin du dossier, sauvegarde, puis clique sur «&nbsp;Tester la connexion&nbsp;».</li>
+      </ol>
+      <p>Exemple de structure seulement — la valeur réelle de <code>token</code> est générée par rclone&nbsp;:</p>
+      <pre class="config-example">[gdrive]
+type = drive
+scope = drive
+token = {"access_token":"...","refresh_token":"..."}</pre>
+      <p class="muted">Si le dossier a été partagé par quelqu'un d'autre, ajoute-le de préférence comme raccourci dans «&nbsp;Mon Drive&nbsp;» avant de renseigner son chemin.</p>
+    </div>
+  </details>
   <div class="form-grid">
-    <label>Dossier local <input name="local_media_dir" value="{{ config.local_media_dir }}" required></label>
-    <label>Remote rclone <input name="rclone_remote" value="{{ config.rclone_remote }}" required></label>
-    <label>Chemin Google Drive <input name="rclone_path" value="{{ config.rclone_path }}"></label>
+    <label>Dossier local sur le Raspberry Pi <input name="local_media_dir" value="{{ config.local_media_dir }}" required></label>
+    <label>Nom du remote rclone <input name="rclone_remote" value="{{ config.rclone_remote }}" placeholder="gdrive" required></label>
+    <label>Chemin du dossier Google Drive <input name="rclone_path" value="{{ config.rclone_path }}" placeholder="Affichage/Hall entree"></label>
     <label>Arguments mpv <input name="mpv_extra_args" value="{{ config.mpv_extra_args }}"></label>
   </div>
-  <label>rclone.conf
+  <label>Contenu complet de rclone.conf
     <textarea name="rclone_config_text" rows="10" spellcheck="false">{{ config.rclone_config_text }}</textarea>
   </label>
   <div class="button-row">
@@ -23,4 +50,3 @@
   {% endif %}
 </form>
 {% endblock %}
-

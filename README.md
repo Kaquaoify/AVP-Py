@@ -130,17 +130,57 @@ La page `Paramètres > Configuration des dossiers` permet de régler :
 - le dossier local qui recevra les vidéos ;
 - le nom du remote `rclone` ;
 - le chemin du dossier Google Drive ;
-- le contenu optionnel de `rclone.conf`.
+- le contenu complet de `rclone.conf`, token Google inclus.
 
-Pour une configuration simple, tu peux générer le remote sur le Raspberry Pi :
+AVP-Py n'attend pas uniquement le JSON du token. La méthode recommandée consiste à
+créer le remote complet sur un ordinateur avec un navigateur, puis à copier son bloc
+de configuration dans l'interface du Raspberry Pi.
 
-```bash
+### Pairage depuis un ordinateur
+
+1. Installe [`rclone`](https://rclone.org/downloads/) sur un ordinateur disposant d'un navigateur.
+2. Ouvre un terminal et lance :
+
+```text
 rclone config
 ```
 
-Puis utiliser le nom du remote dans l'interface web, par exemple `gdrive`.
+3. Choisis `n` pour créer un nouveau remote.
+4. Donne-lui le nom `gdrive`.
+5. Choisis le stockage `drive` correspondant à Google Drive.
+6. Sauf besoin particulier, laisse `client_id` et `client_secret` vides.
+7. Choisis l'accès complet à Drive, puis refuse la configuration avancée.
+8. Accepte l'authentification automatique et connecte-toi au compte Google dans le navigateur.
+9. Termine l'assistant, puis demande l'emplacement du fichier généré :
 
-Si tu colles un contenu `rclone.conf` dans l'interface web, AVP-Py l'écrit dans `/var/lib/avp-py/rclone.conf` et l'utilise pour les tests et synchronisations.
+```text
+rclone config file
+```
+
+10. Ouvre `rclone.conf` et copie tout le bloc `[gdrive]`. Sa structure ressemble à ceci :
+
+```ini
+[gdrive]
+type = drive
+scope = drive
+token = {"access_token":"...","refresh_token":"..."}
+```
+
+11. Dans AVP-Py, renseigne :
+
+    - **Nom du remote rclone** : `gdrive` ;
+    - **Chemin du dossier Google Drive** : par exemple `Affichage/Hall entree` ;
+    - **Contenu complet de rclone.conf** : le bloc copié, avec son vrai token.
+
+12. Clique sur `Sauvegarder`, puis `Tester la connexion` et enfin
+    `Synchroniser maintenant`.
+
+Si le dossier a été partagé par un autre compte, ajoute-le de préférence comme
+raccourci dans `Mon Drive`, puis utilise le chemin de ce raccourci dans AVP-Py.
+
+Le token permet d'accéder au Drive : ne le publie jamais dans GitHub, des captures
+d'écran ou des logs. AVP-Py conserve la configuration dans `/var/lib/avp-py` et
+l'utilise uniquement pour les tests et les synchronisations `rclone`.
 
 ---
 
