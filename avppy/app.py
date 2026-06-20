@@ -575,17 +575,15 @@ async def save_admin(request: Request):
     requested_name = str(form.get("device_name", config["device_name"])).strip() or "avp-py"
     device_name = slugify(requested_name)[:63].strip("-") or "avp-py"
     changes = {"device_name": device_name}
-    message = "Paramètres sauvegardés."
-    if device_name != config.get("device_name"):
-        result = set_device_hostname(device_name)
-        if result.ok:
-            message = (
-                f"Nom d'appareil modifié. Nouvelle adresse : "
-                f"http://{device_name}.local:8000"
-            )
-        else:
-            changes.pop("device_name")
-            message = f"Impossible de modifier le nom d'hôte : {result.output}"
+    result = set_device_hostname(device_name)
+    if result.ok:
+        message = (
+            f"Nom d'appareil appliqué. Nouvelle adresse : "
+            f"http://{device_name}.local:8000"
+        )
+    else:
+        changes.pop("device_name")
+        message = f"Impossible de modifier le nom d'hôte : {result.output}"
     new_password = str(form.get("new_password", "")).strip()
     if new_password:
         changes["admin_password_hash"] = hash_password(new_password)
