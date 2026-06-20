@@ -2,6 +2,7 @@
 Description=AVP-Py autonomous video player
 After=network-online.target
 Wants=network-online.target
+Conflicts=getty@tty1.service
 
 [Service]
 Type=simple
@@ -11,10 +12,14 @@ SupplementaryGroups=audio video input render
 WorkingDirectory=@INSTALL_DIR@
 Environment=AVPPY_DATA_DIR=@DATA_DIR@
 Environment=PYTHONUNBUFFERED=1
+StandardInput=tty-force
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
 ExecStart=@INSTALL_DIR@/.venv/bin/uvicorn avppy.app:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-

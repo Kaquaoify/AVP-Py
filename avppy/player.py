@@ -53,7 +53,15 @@ class PlayerController:
         args.extend(extra_args)
 
         LOGGER.info("Starting mpv idle screen")
-        self.process = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True)
+        mpv_log_path = DATA_DIR / "logs" / "mpv.log"
+        mpv_log_path.parent.mkdir(parents=True, exist_ok=True)
+        with mpv_log_path.open("a", encoding="utf-8") as mpv_log:
+            self.process = subprocess.Popen(
+                args,
+                stdout=mpv_log,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
         self._wait_for_ipc()
         self.set_volume(int(config.get("volume", 70)))
 
@@ -103,9 +111,15 @@ class PlayerController:
         while time.monotonic() < deadline:
             if self.ipc_path.exists():
                 return
+            if self.process is not None and self.process.poll() is not None:
+                LOGGER.error(
+                    "mpv exited before creating its IPC socket (code %s); see %s",
+                    self.process.returncode,
+                    DATA_DIR / "logs" / "mpv.log",
+                )
+                return
             time.sleep(0.1)
         LOGGER.warning("mpv IPC socket did not appear: %s", self.ipc_path)
 
 
 player = PlayerController()
-

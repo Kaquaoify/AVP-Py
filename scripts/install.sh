@@ -52,6 +52,7 @@ sed \
   "${INSTALL_DIR}/systemd/avp-py.service" > "${TMP_SERVICE}"
 ${SUDO} mv "${TMP_SERVICE}" "${SERVICE_FILE}"
 ${SUDO} systemctl daemon-reload
+${SUDO} systemctl disable getty@tty1.service || true
 ${SUDO} systemctl enable avp-py.service
 ${SUDO} systemctl restart avp-py.service
 
