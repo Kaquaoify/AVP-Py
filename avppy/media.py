@@ -7,11 +7,12 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from .config import THUMB_DIR
+from .config import DATA_DIR, THUMB_DIR
 
 LOGGER = logging.getLogger(__name__)
 
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v", ".mpg", ".mpeg"}
+MEDIA_ORDER_FILE = DATA_DIR / "media-order.json"
 
 
 def is_video(path: Path) -> bool:
@@ -85,10 +86,75 @@ def generate_thumbnail(path: Path, force: bool = False) -> str:
     return name
 
 
+def remove_thumbnail(path: Path) -> None:
+    thumbnail = THUMB_DIR / thumbnail_name(path)
+    if thumbnail.exists():
+        thumbnail.unlink()
+
+
+def ordered_media_files(media_dir: str | Path) -> list[Path]:
+    root = Path(media_dir).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    files = [path for path in root.rglob("*") if is_video(path)]
+    by_relative = {path.relative_to(root).as_posix(): path for path in files}
+
+    configured_order: list[str] = []
+    if MEDIA_ORDER_FILE.exists():
+        try:
+            payload = json.loads(MEDIA_ORDER_FILE.read_text(encoding="utf-8"))
+            if payload.get("media_dir") == str(root) and isinstance(payload.get("files"), list):
+                configured_order = [str(item) for item in payload["files"]]
+        except (json.JSONDecodeError, OSError, AttributeError):
+            LOGGER.warning("Could not read media order from %s", MEDIA_ORDER_FILE)
+
+    ordered = [
+        by_relative.pop(relative) for relative in configured_order if relative in by_relative
+    ]
+    ordered.extend(sorted(by_relative.values(), key=lambda path: path.name.lower()))
+    return ordered
+
+
+def save_media_order(media_dir: str | Path, files: list[Path]) -> None:
+    root = Path(media_dir).resolve()
+    payload = {
+        "media_dir": str(root),
+        "files": [path.resolve().relative_to(root).as_posix() for path in files],
+    }
+    MEDIA_ORDER_FILE.parent.mkdir(parents=True, exist_ok=True)
+    MEDIA_ORDER_FILE.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+
+
+def resolve_media_path(media_dir: str | Path, relative_path: str) -> Path:
+    root = Path(media_dir).resolve()
+    candidate = (root / relative_path).resolve()
+    if candidate == root or root not in candidate.parents:
+        raise ValueError("Chemin de média invalide.")
+    return candidate
+
+
+def move_media(media_dir: str | Path, relative_path: str, direction: str) -> bool:
+    root = Path(media_dir).resolve()
+    target = resolve_media_path(root, relative_path)
+    files = ordered_media_files(root)
+    try:
+        index = files.index(target)
+    except ValueError:
+        return False
+
+    new_index = index - 1 if direction == "up" else index + 1
+    if new_index < 0 or new_index >= len(files):
+        return False
+    files[index], files[new_index] = files[new_index], files[index]
+    save_media_order(root, files)
+    return True
+
+
 def scan_media(media_dir: str | Path, regenerate_thumbnails: bool = False) -> list[dict[str, Any]]:
     root = Path(media_dir)
     root.mkdir(parents=True, exist_ok=True)
-    files = sorted((p for p in root.rglob("*") if is_video(p)), key=lambda p: p.name.lower())
+    files = ordered_media_files(root)
     items: list[dict[str, Any]] = []
 
     for index, path in enumerate(files, start=1):
@@ -98,6 +164,7 @@ def scan_media(media_dir: str | Path, regenerate_thumbnails: bool = False) -> li
             {
                 "index": index,
                 "filename": path.name,
+                "relative_path": path.resolve().relative_to(root.resolve()).as_posix(),
                 "title": path.stem,
                 "path": str(path),
                 "thumbnail": thumb,
@@ -108,8 +175,7 @@ def scan_media(media_dir: str | Path, regenerate_thumbnails: bool = False) -> li
 
 
 def write_playlist(media_dir: str | Path, playlist_path: Path) -> int:
-    files = sorted((p for p in Path(media_dir).rglob("*") if is_video(p)), key=lambda p: p.name.lower())
+    files = ordered_media_files(media_dir)
     playlist_path.parent.mkdir(parents=True, exist_ok=True)
     playlist_path.write_text("\n".join(str(path) for path in files) + "\n", encoding="utf-8")
     return len(files)
-

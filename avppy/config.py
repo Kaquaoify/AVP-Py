@@ -15,6 +15,7 @@ MEDIA_DIR = DATA_DIR / "media"
 THUMB_DIR = DATA_DIR / "thumbnails"
 LOG_DIR = DATA_DIR / "logs"
 RCLONE_CONFIG_FILE = DATA_DIR / "rclone.conf"
+RCLONE_CONFIG_SOURCE_HASH_FILE = DATA_DIR / "rclone-config-source.sha256"
 
 
 def ensure_directories() -> None:
@@ -45,6 +46,7 @@ def default_config() -> dict[str, Any]:
         "admin_password_hash": hash_password("1234"),
         "secret_key": secrets.token_hex(32),
         "local_media_dir": str(MEDIA_DIR),
+        "media_source": "rclone",
         "playback_days": [0, 1, 2, 3, 4, 5, 6],
         "playback_start": "08:00",
         "playback_end": "20:00",
@@ -104,5 +106,13 @@ def write_rclone_config_if_needed(config: dict[str, Any]) -> dict[str, str]:
     text = (config.get("rclone_config_text") or "").strip()
     if not text:
         return {}
-    RCLONE_CONFIG_FILE.write_text(text + "\n", encoding="utf-8")
+    source_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    applied_hash = ""
+    if RCLONE_CONFIG_SOURCE_HASH_FILE.exists():
+        applied_hash = RCLONE_CONFIG_SOURCE_HASH_FILE.read_text(encoding="utf-8").strip()
+
+    if not RCLONE_CONFIG_FILE.exists() or applied_hash != source_hash:
+        RCLONE_CONFIG_FILE.write_text(text + "\n", encoding="utf-8")
+        RCLONE_CONFIG_FILE.chmod(0o600)
+        RCLONE_CONFIG_SOURCE_HASH_FILE.write_text(source_hash + "\n", encoding="utf-8")
     return {"RCLONE_CONFIG": str(RCLONE_CONFIG_FILE)}

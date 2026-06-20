@@ -15,6 +15,7 @@
     <button type="submit">Sauver</button>
   </form>
   <a class="button" href="/settings">Paramètres</a>
+  {% if config.media_source == "manual" %}<a class="button secondary" href="/settings/media">Gérer les médias</a>{% endif %}
 </section>
 
 <section class="status-line">
@@ -48,4 +49,3 @@
   {% endfor %}
 </section>
 {% endblock %}
-

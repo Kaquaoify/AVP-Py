@@ -77,10 +77,12 @@ Paramètres > Réseau
 
 Dans `Paramètres > Configuration des dossiers` :
 
-1. Renseigne le remote `rclone`, par exemple `gdrive`.
-2. Renseigne le chemin Google Drive.
-3. Clique sur `Tester la connexion`.
-4. Clique sur `Synchroniser maintenant`.
+1. Choisis `Synchronisation rclone` ou `Gestion locale depuis l'interface web`.
+2. En mode rclone, renseigne le remote, le chemin distant et `rclone.conf`, puis teste la connexion.
+3. En mode manuel, sauvegarde puis ouvre `Paramètres > Gestion des médias` pour envoyer les vidéos.
+
+Le passage en mode manuel met rclone en pause sans effacer sa configuration. Revenir
+au mode rclone restaure donc immédiatement les réglages précédents.
 
 ## 6. Configurer les horaires
 

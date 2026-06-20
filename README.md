@@ -125,6 +125,39 @@ Le script [`scripts/update.sh`](scripts/update.sh) fait un `git pull`, met à jo
 
 ## Configuration Google Drive
 
+### Choisir la source des médias
+
+Dans `Paramètres > Configuration des dossiers`, AVP-Py propose deux modes exclusifs :
+
+- **Synchronisation rclone** : le dossier distant reste la référence et est synchronisé selon l'horaire configuré ;
+- **Gestion locale depuis l'interface web** : les vidéos sont envoyées et organisées directement dans AVP-Py.
+
+Passer en mode manuel ne supprime ni le remote, ni le chemin distant, ni le contenu de
+`rclone.conf`, ni l'horaire de synchronisation. Ces réglages sont simplement mis en
+pause. En revenant au mode rclone, la configuration précédente redevient immédiatement
+opérationnelle.
+
+Les deux modes ne doivent pas modifier les fichiers simultanément : `rclone sync`
+pourrait supprimer un fichier envoyé manuellement s'il n'existe pas dans la source
+distante. L'application bloque donc les modifications locales tant que rclone est actif.
+
+### Gestion locale des vidéos
+
+La page `Paramètres > Gestion des médias` permet de :
+
+- envoyer une ou plusieurs vidéos ;
+- contrôler leur format avec `ffprobe` et générer leurs miniatures ;
+- renommer ou supprimer un fichier ;
+- modifier l'ordre de lecture ;
+- consulter l'espace disque disponible ;
+- publier la nouvelle playlist sans démarrer une lecture hors horaire.
+
+Les uploads sont d'abord écrits dans un dossier temporaire, puis déplacés dans le
+dossier média uniquement après validation. L'ordre est conservé dans
+`/var/lib/avp-py/media-order.json`, hors du dossier synchronisé.
+
+### Configuration rclone et Google Drive
+
 La page `Paramètres > Configuration des dossiers` permet de régler :
 
 - le dossier local qui recevra les vidéos ;
@@ -180,7 +213,9 @@ raccourci dans `Mon Drive`, puis utilise le chemin de ce raccourci dans AVP-Py.
 
 Le token permet d'accéder au Drive : ne le publie jamais dans GitHub, des captures
 d'écran ou des logs. AVP-Py conserve la configuration dans `/var/lib/avp-py` et
-l'utilise uniquement pour les tests et les synchronisations `rclone`.
+l'utilise uniquement pour les tests et les synchronisations `rclone`. Le fichier actif
+n'est réinitialisé que lorsque le contenu enregistré dans la page change, afin de laisser
+rclone conserver les renouvellements automatiques de son token.
 
 ---
 
@@ -189,6 +224,8 @@ l'utilise uniquement pour les tests et les synchronisations `rclone`.
 - Les médias sont triés par nom de fichier.
 - Le dossier local est le miroir du dossier Google Drive : un fichier supprimé de Google Drive sera supprimé localement au prochain `rclone sync`.
 - Les miniatures sont générées après la synchronisation.
+- En mode manuel, les synchronisations rclone sont ignorées sans effacer leur configuration.
+- L'ordre choisi dans le gestionnaire web est utilisé pour la playlist et l'accueil.
 - La lecture démarre et s'arrête selon les jours et heures configurés.
 - Hors lecture, le player reste sur une fenêtre noire via `mpv --idle`.
 - Un redémarrage quotidien est activé par défaut à `06:00` et peut être désactivé.

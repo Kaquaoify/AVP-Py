@@ -16,6 +16,9 @@
     <label>Synchro médias <input name="sync_time" type="time" value="{{ config.sync_time }}" required></label>
     <label>Redémarrage <input name="reboot_time" type="time" value="{{ config.reboot_time }}" required></label>
   </div>
+  {% if config.media_source == "manual" %}
+    <p class="notice">La gestion locale est active : l'heure de synchronisation rclone est conservée mais mise en pause.</p>
+  {% endif %}
   <label class="checkline"><input name="reboot_enabled" type="checkbox" {% if config.reboot_enabled %}checked{% endif %}> Redémarrage quotidien activé</label>
   <div class="button-row">
     <button type="submit">Sauvegarder</button>
@@ -23,4 +26,3 @@
   </div>
 </form>
 {% endblock %}
-

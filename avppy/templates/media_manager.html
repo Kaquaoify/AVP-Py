@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Gestion des médias{% endblock %}
+{% block content %}
+<section class="panel stack">
+  <div class="section-heading">
+    <div>
+      <h1>Gestion des médias</h1>
+      <p class="muted">{{ media|length }} vidéo(s) · {{ disk_free }} libres sur {{ disk_total }}</p>
+    </div>
+    <a class="button secondary" href="/settings">Retour</a>
+  </div>
+
+  {% if config.media_source != "manual" %}
+    <p class="notice warning">
+      Le mode rclone est actuellement actif. Les fichiers ajoutés ici pourraient être
+      supprimés par la prochaine synchronisation. Active d'abord le mode manuel dans
+      «&nbsp;Configuration des dossiers&nbsp;».
+    </p>
+  {% endif %}
+
+  <form method="post" action="/settings/media/upload" enctype="multipart/form-data" class="upload-box stack">
+    <label>Sélectionner une ou plusieurs vidéos
+      <input name="files" type="file" accept="video/*" multiple required>
+    </label>
+    <p class="muted">Formats acceptés : {{ extensions }}. Laisse cette page ouverte pendant l'envoi.</p>
+    <button type="submit" {% if config.media_source != "manual" %}disabled{% endif %}>Envoyer les vidéos</button>
+  </form>
+
+  <div class="button-row">
+    <form method="post" action="/settings/media/publish">
+      <button type="submit" {% if config.media_source != "manual" %}disabled{% endif %}>Publier la playlist</button>
+    </form>
+    <a class="button secondary" href="/settings/folders">Choisir la source des médias</a>
+  </div>
+
+  {% if message %}<pre class="console compact">{{ message }}</pre>{% endif %}
+
+  <div class="managed-media-list">
+    {% for item in media %}
+      <article class="managed-media-row">
+        <div class="rank">{{ item.index }}</div>
+        {% if item.thumbnail %}
+          <img src="/thumbs/{{ item.thumbnail }}" alt="">
+        {% else %}
+          <div class="thumb-placeholder"></div>
+        {% endif %}
+        <div class="media-details">
+          <h2>{{ item.title }}</h2>
+          <p class="muted">{{ item.duration or "?" }} s · {{ item.codec or "codec inconnu" }} · {{ item.resolution or "résolution inconnue" }}</p>
+          <form method="post" action="/settings/media/rename" class="rename-row">
+            <input type="hidden" name="relative_path" value="{{ item.relative_path }}">
+            <input name="new_name" value="{{ item.filename }}" aria-label="Nouveau nom" required>
+            <button type="submit" {% if config.media_source != "manual" %}disabled{% endif %}>Renommer</button>
+          </form>
+        </div>
+        <div class="media-actions">
+          <form method="post" action="/settings/media/reorder">
+            <input type="hidden" name="relative_path" value="{{ item.relative_path }}">
+            <button name="direction" value="up" type="submit" title="Monter" {% if config.media_source != "manual" %}disabled{% endif %}>↑</button>
+            <button name="direction" value="down" type="submit" title="Descendre" {% if config.media_source != "manual" %}disabled{% endif %}>↓</button>
+          </form>
+          <form method="post" action="/settings/media/delete" onsubmit="return confirm('Supprimer définitivement cette vidéo ?');">
+            <input type="hidden" name="relative_path" value="{{ item.relative_path }}">
+            <button class="danger" type="submit" {% if config.media_source != "manual" %}disabled{% endif %}>Supprimer</button>
+          </form>
+        </div>
+      </article>
+    {% else %}
+      <p class="empty">Aucune vidéo locale.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

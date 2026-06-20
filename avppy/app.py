@@ -2,17 +2,40 @@ from __future__ import annotations
 
 import hmac
 import logging
+import shutil
 from hashlib import sha256
 from pathlib import Path
+from uuid import uuid4
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .config import LOG_DIR, THUMB_DIR, hash_password, load_config, save_config, update_config, verify_password
+from .config import (
+    DATA_DIR,
+    LOG_DIR,
+    THUMB_DIR,
+    hash_password,
+    load_config,
+    save_config,
+    update_config,
+    verify_password,
+)
 from .logging_setup import configure_logging
-from .media import scan_media
+from .media import (
+    VIDEO_EXTENSIONS,
+    generate_thumbnail,
+    is_video,
+    move_media,
+    ordered_media_files,
+    probe_media,
+    remove_thumbnail,
+    resolve_media_path,
+    save_media_order,
+    scan_media,
+    write_playlist,
+)
 from .network import connect_wifi, network, scan_wifi
 from .player import player
 from .scheduler import scheduler
@@ -297,12 +320,18 @@ async def save_folders(request: Request):
     if login_redirect := require_login(request, config):
         return login_redirect
     form = await request.form()
+    media_source = str(form.get("media_source", config.get("media_source", "rclone")))
+    if media_source not in {"rclone", "manual"}:
+        media_source = "rclone"
     changes = {
+        "media_source": media_source,
         "local_media_dir": str(form.get("local_media_dir", config["local_media_dir"])).strip(),
         "rclone_remote": str(form.get("rclone_remote", config["rclone_remote"])).strip(),
         "rclone_path": str(form.get("rclone_path", config["rclone_path"])).strip(),
         "rclone_config_text": str(form.get("rclone_config_text", "")),
-        "mpv_extra_args": str(form.get("mpv_extra_args", config.get("mpv_extra_args", ""))).strip(),
+        "mpv_extra_args": str(
+            form.get("mpv_extra_args", config.get("mpv_extra_args", ""))
+        ).strip(),
     }
     config = update_config(changes)
     action = str(form.get("action", "save"))
@@ -311,12 +340,201 @@ async def save_folders(request: Request):
         ok, output = test_connection(config)
         message = ("Connexion OK\n" if ok else "Connexion échouée\n") + output
     elif action == "sync":
-        ok, output = sync_now(config)
-        message = ("Synchronisation terminée\n" if ok else "Synchronisation échouée\n") + output
+        if config.get("media_source", "rclone") != "rclone":
+            message = "Synchronisation ignorée : la gestion locale est active."
+        else:
+            ok, output = sync_now(config)
+            message = ("Synchronisation terminée\n" if ok else "Synchronisation échouée\n") + output
     return templates.TemplateResponse(
         "folders.html",
         {"request": request, "config": config, "message": message},
     )
+
+
+def _format_bytes(value: int) -> str:
+    size = float(value)
+    for unit in ("o", "Kio", "Mio", "Gio", "Tio"):
+        if size < 1024 or unit == "Tio":
+            return f"{size:.1f} {unit}"
+        size /= 1024
+    return f"{size:.1f} Tio"
+
+
+def _media_manager_response(request: Request, config: dict, message: str = ""):
+    media_root = Path(config["local_media_dir"])
+    media_root.mkdir(parents=True, exist_ok=True)
+    disk = shutil.disk_usage(media_root)
+    return templates.TemplateResponse(
+        "media_manager.html",
+        {
+            "request": request,
+            "config": config,
+            "message": message,
+            "media": scan_media(media_root),
+            "disk_free": _format_bytes(disk.free),
+            "disk_total": _format_bytes(disk.total),
+            "extensions": ", ".join(sorted(VIDEO_EXTENSIONS)),
+        },
+    )
+
+
+def _unique_media_destination(root: Path, filename: str) -> Path:
+    destination = root / filename
+    counter = 2
+    while destination.exists():
+        destination = root / f"{Path(filename).stem} ({counter}){Path(filename).suffix}"
+        counter += 1
+    return destination
+
+
+def _safe_media_name(value: str) -> str:
+    basename = Path(value.replace("\\", "/")).name
+    return "".join(character for character in basename if character >= " ").strip(" .")
+
+
+@app.get("/settings/media", response_class=HTMLResponse)
+def media_manager_page(request: Request):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    return _media_manager_response(request, config)
+
+
+@app.post("/settings/media/upload", response_class=HTMLResponse)
+async def upload_media(request: Request, files: list[UploadFile] = File(...)):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    if config.get("media_source", "rclone") != "manual":
+        return _media_manager_response(
+            request, config, "Envoi refusé : active d'abord la gestion locale."
+        )
+
+    media_root = Path(config["local_media_dir"]).resolve()
+    media_root.mkdir(parents=True, exist_ok=True)
+    upload_dir = media_root.parent / ".avppy-uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    messages: list[str] = []
+
+    for upload in files:
+        filename = _safe_media_name(upload.filename or "")
+        suffix = Path(filename).suffix.lower()
+        if not filename or suffix not in VIDEO_EXTENSIONS:
+            messages.append(
+                f"Fichier ignoré : {filename or 'nom vide'} (format non pris en charge)."
+            )
+            await upload.close()
+            continue
+
+        temporary = upload_dir / f"{uuid4().hex}{suffix}"
+        try:
+            with temporary.open("wb") as output:
+                while chunk := await upload.read(1024 * 1024):
+                    output.write(chunk)
+
+            if not probe_media(temporary):
+                messages.append(f"Fichier refusé : {filename} n'est pas une vidéo lisible.")
+                continue
+
+            destination = _unique_media_destination(media_root, filename)
+            temporary.replace(destination)
+            generate_thumbnail(destination, force=True)
+            messages.append(f"Vidéo ajoutée : {destination.name}")
+        except OSError as exc:
+            LOGGER.exception("Media upload failed for %s", filename)
+            messages.append(f"Échec de l'envoi de {filename} : {exc}")
+        finally:
+            await upload.close()
+            if temporary.exists():
+                temporary.unlink()
+
+    save_media_order(media_root, ordered_media_files(media_root))
+    return _media_manager_response(request, config, "\n".join(messages))
+
+
+@app.post("/settings/media/delete", response_class=HTMLResponse)
+def delete_media(request: Request, relative_path: str = Form(...)):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    if config.get("media_source", "rclone") != "manual":
+        return _media_manager_response(
+            request, config, "Suppression refusée : active d'abord la gestion locale."
+        )
+    media_root = Path(config["local_media_dir"]).resolve()
+    try:
+        target = resolve_media_path(media_root, relative_path)
+        if not is_video(target):
+            raise ValueError("Le fichier vidéo est introuvable.")
+        remove_thumbnail(target)
+        target.unlink()
+        save_media_order(media_root, ordered_media_files(media_root))
+        message = f"Vidéo supprimée : {target.name}"
+    except (OSError, ValueError) as exc:
+        message = f"Suppression impossible : {exc}"
+    return _media_manager_response(request, config, message)
+
+
+@app.post("/settings/media/rename", response_class=HTMLResponse)
+def rename_media(request: Request, relative_path: str = Form(...), new_name: str = Form(...)):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    if config.get("media_source", "rclone") != "manual":
+        return _media_manager_response(
+            request, config, "Renommage refusé : active d'abord la gestion locale."
+        )
+    media_root = Path(config["local_media_dir"]).resolve()
+    try:
+        target = resolve_media_path(media_root, relative_path)
+        safe_name = _safe_media_name(new_name)
+        if not is_video(target):
+            raise ValueError("Le fichier vidéo est introuvable.")
+        if not safe_name or Path(safe_name).suffix.lower() not in VIDEO_EXTENSIONS:
+            raise ValueError("Le nouveau nom doit conserver une extension vidéo valide.")
+        destination = target.with_name(safe_name)
+        if destination.exists() and destination != target:
+            raise ValueError("Un fichier porte déjà ce nom.")
+
+        files = ordered_media_files(media_root)
+        remove_thumbnail(target)
+        target.rename(destination)
+        files = [destination if path == target else path for path in files]
+        save_media_order(media_root, files)
+        generate_thumbnail(destination, force=True)
+        message = f"Vidéo renommée : {destination.name}"
+    except (OSError, ValueError) as exc:
+        message = f"Renommage impossible : {exc}"
+    return _media_manager_response(request, config, message)
+
+
+@app.post("/settings/media/reorder", response_class=HTMLResponse)
+def reorder_media(request: Request, relative_path: str = Form(...), direction: str = Form(...)):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    if config.get("media_source", "rclone") != "manual":
+        return _media_manager_response(
+            request, config, "Modification refusée : active d'abord la gestion locale."
+        )
+    changed = direction in {"up", "down"} and move_media(
+        config["local_media_dir"], relative_path, direction
+    )
+    message = "Ordre de lecture modifié." if changed else "Ce média est déjà en bout de liste."
+    return _media_manager_response(request, config, message)
+
+
+@app.post("/settings/media/publish", response_class=HTMLResponse)
+def publish_media(request: Request):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    if scheduler.playback_active:
+        count = player.play_playlist(config["local_media_dir"], config)
+        scheduler.playback_active = count > 0
+    else:
+        count = write_playlist(config["local_media_dir"], DATA_DIR / "playlist.m3u")
+    return _media_manager_response(request, config, f"Playlist publiée avec {count} vidéo(s).")
 
 
 @app.get("/settings/logs", response_class=HTMLResponse)

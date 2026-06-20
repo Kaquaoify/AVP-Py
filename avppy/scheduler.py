@@ -59,6 +59,8 @@ class Scheduler:
             LOGGER.info("Scheduled playback stopped")
 
     def _handle_sync(self, config: dict, now: datetime) -> None:
+        if config.get("media_source", "rclone") != "rclone":
+            return
         sync_time = config.get("sync_time", "03:00")
         key = f"{now.date()}-{sync_time}"
         if now.strftime("%H:%M") == sync_time and self.last_sync_key != key:
@@ -90,4 +92,3 @@ class Scheduler:
 
 
 scheduler = Scheduler()
-

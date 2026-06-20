@@ -3,50 +3,73 @@
 {% block content %}
 <form method="post" action="/settings/folders" class="panel stack">
   <h1>Configuration des dossiers</h1>
-  <details class="help-box" open>
-    <summary>Comment connecter Google Drive&nbsp;?</summary>
-    <div class="stack help-content">
-      <p>
-        AVP-Py attend le contenu complet d'un fichier <code>rclone.conf</code>.
-        Ce contenu inclut le token d'autorisation Google&nbsp;: ne le partage jamais et ne
-        l'envoie pas dans des captures d'écran ou des logs.
-      </p>
-      <ol>
-        <li>Sur un ordinateur avec un navigateur, installe <a href="https://rclone.org/downloads/" target="_blank" rel="noopener">rclone</a>.</li>
-        <li>Lance <code>rclone config</code> dans un terminal.</li>
-        <li>Choisis <code>n</code> pour créer un remote et nomme-le <code>gdrive</code>.</li>
-        <li>Choisis le stockage <code>drive</code> (Google Drive).</li>
-        <li>Sauf besoin particulier, laisse Client ID et Client Secret vides, choisis l'accès complet à Drive, puis refuse la configuration avancée.</li>
-        <li>Accepte l'authentification automatique. Dans le navigateur, connecte le compte Google qui peut consulter le dossier de vidéos.</li>
-        <li>Termine l'assistant, puis lance <code>rclone config file</code> pour afficher l'emplacement de <code>rclone.conf</code>.</li>
-        <li>Ouvre ce fichier, copie tout le bloc <code>[gdrive]</code>, puis colle-le dans le champ «&nbsp;Contenu complet de rclone.conf&nbsp;» ci-dessous.</li>
-        <li>Garde <code>gdrive</code> comme nom du remote, indique le chemin du dossier, sauvegarde, puis clique sur «&nbsp;Tester la connexion&nbsp;».</li>
-      </ol>
-      <p>Exemple de structure seulement — la valeur réelle de <code>token</code> est générée par rclone&nbsp;:</p>
-      <pre class="config-example">[gdrive]
-type = drive
-scope = drive
-token = {"access_token":"...","refresh_token":"..."}</pre>
-      <p class="muted">Si le dossier a été partagé par quelqu'un d'autre, ajoute-le de préférence comme raccourci dans «&nbsp;Mon Drive&nbsp;» avant de renseigner son chemin.</p>
-    </div>
-  </details>
+
+  <fieldset class="source-picker">
+    <legend>Source des médias</legend>
+    <label>
+      <input type="radio" name="media_source" value="rclone" {% if config.media_source == "rclone" %}checked{% endif %}>
+      <span><strong>Synchronisation rclone</strong><small>Google Drive ou autre stockage distant, synchronisé selon l'horaire configuré.</small></span>
+    </label>
+    <label>
+      <input type="radio" name="media_source" value="manual" {% if config.media_source == "manual" %}checked{% endif %}>
+      <span><strong>Gestion locale depuis l'interface web</strong><small>Upload, suppression et ordre de lecture gérés directement sur cet appareil.</small></span>
+    </label>
+  </fieldset>
+
   <div class="form-grid">
     <label>Dossier local sur le Raspberry Pi <input name="local_media_dir" value="{{ config.local_media_dir }}" required></label>
-    <label>Nom du remote rclone <input name="rclone_remote" value="{{ config.rclone_remote }}" placeholder="gdrive" required></label>
-    <label>Chemin du dossier Google Drive <input name="rclone_path" value="{{ config.rclone_path }}" placeholder="Affichage/Hall entree"></label>
     <label>Arguments mpv <input name="mpv_extra_args" value="{{ config.mpv_extra_args }}"></label>
   </div>
-  <label>Contenu complet de rclone.conf
-    <textarea name="rclone_config_text" rows="10" spellcheck="false">{{ config.rclone_config_text }}</textarea>
-  </label>
+
+  <section id="rclone-settings" class="stack">
+    <p class="notice">Passer en mode manuel met rclone en pause sans effacer aucun de ces réglages.</p>
+    <details class="help-box">
+      <summary>Comment connecter Google Drive&nbsp;?</summary>
+      <div class="stack help-content">
+        <p>AVP-Py attend le contenu complet d'un fichier <code>rclone.conf</code>. Ce contenu inclut le token d'autorisation Google&nbsp;: ne le partage jamais.</p>
+        <ol>
+          <li>Sur un ordinateur avec un navigateur, installe <a href="https://rclone.org/downloads/" target="_blank" rel="noopener">rclone</a>.</li>
+          <li>Lance <code>rclone config</code>, crée un remote <code>gdrive</code> de type <code>drive</code> et authentifie le compte Google.</li>
+          <li>Lance <code>rclone config file</code>, ouvre le fichier indiqué et copie tout le bloc <code>[gdrive]</code>.</li>
+          <li>Colle-le ci-dessous, sauvegarde, puis teste la connexion.</li>
+        </ol>
+      </div>
+    </details>
+    <div class="form-grid">
+      <label>Nom du remote rclone <input name="rclone_remote" value="{{ config.rclone_remote }}" placeholder="gdrive"></label>
+      <label>Chemin du dossier distant <input name="rclone_path" value="{{ config.rclone_path }}" placeholder="Affichage/Hall entree"></label>
+    </div>
+    <label>Contenu complet de rclone.conf
+      <textarea name="rclone_config_text" rows="10" spellcheck="false">{{ config.rclone_config_text }}</textarea>
+    </label>
+  </section>
+
   <div class="button-row">
     <button name="action" value="save" type="submit">Sauvegarder</button>
-    <button name="action" value="test" type="submit">Tester la connexion</button>
-    <button name="action" value="sync" type="submit">Synchroniser maintenant</button>
+    <button class="rclone-action" name="action" value="test" type="submit">Tester la connexion</button>
+    <button class="rclone-action" name="action" value="sync" type="submit">Synchroniser maintenant</button>
+    <a id="manual-manager-link" class="button" href="/settings/media">Gérer les médias</a>
     <a class="button secondary" href="/settings">Retour</a>
   </div>
   {% if message %}
     <pre class="console">{{ message }}</pre>
   {% endif %}
 </form>
+<script>
+  const sourceInputs = document.querySelectorAll('input[name="media_source"]');
+  const rcloneSettings = document.getElementById('rclone-settings');
+  const rcloneActions = document.querySelectorAll('.rclone-action');
+  const manualLink = document.getElementById('manual-manager-link');
+
+  function updateSourceVisibility() {
+    const source = document.querySelector('input[name="media_source"]:checked').value;
+    const rcloneActive = source === 'rclone';
+    rcloneSettings.hidden = !rcloneActive;
+    rcloneActions.forEach(button => button.hidden = !rcloneActive);
+    manualLink.hidden = rcloneActive;
+  }
+
+  sourceInputs.forEach(input => input.addEventListener('change', updateSourceVisibility));
+  updateSourceVisibility();
+</script>
 {% endblock %}
