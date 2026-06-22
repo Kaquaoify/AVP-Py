@@ -24,6 +24,7 @@ body {
   color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0;
+  line-height: 1.5;
 }
 
 a {
@@ -33,9 +34,9 @@ a {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-height: 56px;
-  padding: 0 20px;
+  gap: 22px;
+  min-height: 64px;
+  padding: 0 28px;
   border-bottom: 1px solid var(--line);
   background: var(--panel);
 }
@@ -51,9 +52,9 @@ a {
 }
 
 .page {
-  max-width: 1180px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 24px 110px;
+  padding: 36px 32px 120px;
 }
 
 .login-page {
@@ -64,7 +65,7 @@ a {
 
 .login-box {
   width: min(360px, calc(100vw - 32px));
-  padding: 24px;
+  padding: 30px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -72,7 +73,7 @@ a {
 
 .stack {
   display: grid;
-  gap: 16px;
+  gap: 24px;
 }
 
 .toolbar,
@@ -88,23 +89,23 @@ a {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
-  padding: 12px;
+  gap: 22px;
+  padding: 18px 20px;
 }
 
 .status-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
-  margin: 16px 0;
-  padding: 10px 12px;
+  gap: 16px 28px;
+  margin: 22px 0;
+  padding: 14px 18px;
   color: var(--muted);
 }
 
 .button-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 button,
@@ -114,8 +115,8 @@ button,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
-  padding: 0 14px;
+  min-height: 42px;
+  padding: 0 18px;
   border: 1px solid var(--accent);
   border-radius: 6px;
   background: var(--accent);
@@ -140,17 +141,17 @@ button:disabled {
 .volume {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 280px;
+  gap: 14px;
+  min-width: 310px;
 }
 
 .volume input {
-  width: 160px;
+  width: 180px;
 }
 
 .media-list {
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 
 .pi-clock-footer {
@@ -180,11 +181,11 @@ button:disabled {
 
 .media-row {
   display: grid;
-  grid-template-columns: 36px 160px 1fr;
-  gap: 14px;
+  grid-template-columns: 44px 180px 1fr;
+  gap: 20px;
   align-items: center;
-  min-height: 104px;
-  padding: 10px;
+  min-height: 128px;
+  padding: 16px;
 }
 
 .rank {
@@ -194,7 +195,7 @@ button:disabled {
 
 .media-row img,
 .thumb-placeholder {
-  width: 160px;
+  width: 180px;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   background: #101112;
@@ -202,15 +203,15 @@ button:disabled {
 }
 
 .media-details h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
+  margin: 0 0 12px;
+  font-size: 19px;
   overflow-wrap: anywhere;
 }
 
 dl {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px 14px;
+  gap: 12px 20px;
   margin: 0;
 }
 
@@ -226,20 +227,20 @@ dd {
 
 .settings-nav {
   display: grid;
-  gap: 10px;
-  max-width: 420px;
+  gap: 14px;
+  max-width: 480px;
 }
 
 .settings-nav a {
   justify-content: flex-start;
-  min-height: 48px;
+  min-height: 56px;
   background: var(--panel-soft);
   color: var(--text);
   border-color: var(--line);
 }
 
 .panel {
-  padding: 18px;
+  padding: 26px;
 }
 
 .panel h1 {
@@ -248,7 +249,7 @@ dd {
 }
 
 .help-box {
-  padding: 14px;
+  padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel-soft);
@@ -260,7 +261,7 @@ dd {
 }
 
 .help-content {
-  margin-top: 14px;
+  margin-top: 18px;
 }
 
 .help-content p,
@@ -269,7 +270,7 @@ dd {
 }
 
 .help-content li + li {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .help-content code,
@@ -280,7 +281,7 @@ dd {
 .config-example {
   overflow: auto;
   margin: 0;
-  padding: 12px;
+  padding: 16px;
   border-radius: 6px;
   background: var(--panel-deep);
   white-space: pre-wrap;
@@ -292,7 +293,7 @@ dd {
 
 .notice {
   margin: 0;
-  padding: 10px 12px;
+  padding: 14px 16px;
   border-left: 4px solid var(--accent);
   border-radius: 4px;
   background: #16372f;
@@ -305,9 +306,9 @@ dd {
 
 .source-picker {
   display: grid;
-  gap: 10px;
+  gap: 14px;
   margin: 0;
-  padding: 14px;
+  padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
@@ -316,8 +317,8 @@ dd {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: start;
-  gap: 10px;
-  padding: 12px;
+  gap: 12px;
+  padding: 16px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--panel-soft);
@@ -336,7 +337,7 @@ dd {
 }
 
 .source-picker small {
-  margin-top: 4px;
+  margin-top: 6px;
   color: var(--muted);
   font-weight: 400;
 }
@@ -345,15 +346,15 @@ dd {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
 }
 
 .section-heading p {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
 }
 
 .upload-box {
-  padding: 14px;
+  padding: 18px;
   border: 1px dashed var(--line);
   border-radius: 8px;
   background: var(--panel-soft);
@@ -365,15 +366,15 @@ dd {
 
 .managed-media-list {
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 
 .managed-media-row {
   display: grid;
-  grid-template-columns: 36px 160px minmax(220px, 1fr) auto;
-  gap: 14px;
+  grid-template-columns: 44px 180px minmax(220px, 1fr) auto;
+  gap: 20px;
   align-items: center;
-  padding: 10px;
+  padding: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
@@ -381,7 +382,7 @@ dd {
 
 .managed-media-row img,
 .managed-media-row .thumb-placeholder {
-  width: 160px;
+  width: 180px;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 4px;
@@ -389,23 +390,23 @@ dd {
 }
 
 .managed-media-row p {
-  margin: 0 0 8px;
+  margin: 0 0 12px;
 }
 
 .rename-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .media-actions {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .media-actions form {
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
 }
 
 button.danger {
@@ -415,7 +416,7 @@ button.danger {
 
 label {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   font-weight: 600;
 }
 
@@ -423,8 +424,8 @@ input,
 textarea,
 select {
   width: 100%;
-  min-height: 38px;
-  padding: 8px 10px;
+  min-height: 42px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--panel-deep);
@@ -440,15 +441,15 @@ textarea,
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  gap: 18px;
 }
 
 .days {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px 18px;
   margin: 0;
-  padding: 12px;
+  padding: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
@@ -457,7 +458,7 @@ textarea,
 .checkline {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .days input,
@@ -469,7 +470,7 @@ textarea,
   min-height: 160px;
   max-height: 520px;
   overflow: auto;
-  padding: 12px;
+  padding: 16px;
   margin: 0;
   white-space: pre-wrap;
   background: #15181b;
@@ -494,7 +495,7 @@ table {
 
 th,
 td {
-  padding: 10px;
+  padding: 14px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   overflow-wrap: anywhere;
@@ -512,13 +513,13 @@ th {
 .setup-shell {
   width: min(760px, calc(100vw - 28px));
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 36px 0;
 }
 
 .log-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .log-tabs a {
@@ -543,8 +544,19 @@ th {
 }
 
 @media (max-width: 720px) {
+  .topbar {
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .device {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .page {
-    padding: 14px 14px 105px;
+    padding: 20px 16px 110px;
   }
 
   .pi-clock-footer {
@@ -554,7 +566,9 @@ th {
 
   .media-row {
     grid-template-columns: 28px 112px 1fr;
-    gap: 10px;
+    gap: 12px;
+    min-height: 108px;
+    padding: 12px;
   }
 
   .media-row img,
@@ -566,8 +580,21 @@ th {
     align-items: stretch;
   }
 
+  .volume {
+    min-width: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .volume input {
+    flex: 1 1 140px;
+    width: auto;
+  }
+
   .managed-media-row {
     grid-template-columns: 28px 96px 1fr;
+    gap: 12px;
+    padding: 12px;
   }
 
   .managed-media-row img,
