@@ -3,6 +3,7 @@ from __future__ import annotations
 import hmac
 import logging
 import shutil
+from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 from uuid import uuid4
@@ -85,6 +86,21 @@ def setup_mode_or_login(request: Request, config: dict) -> RedirectResponse | No
     return require_login(request, config)
 
 
+def clock_status() -> dict:
+    now = datetime.now().astimezone()
+    offset = now.utcoffset()
+    offset_minutes = int(offset.total_seconds() // 60) if offset else 0
+    sign = "+" if offset_minutes >= 0 else "-"
+    hours, minutes = divmod(abs(offset_minutes), 60)
+    return {
+        "iso": now.isoformat(timespec="seconds"),
+        "display": now.strftime("%d.%m.%Y %H:%M:%S"),
+        "timezone": now.tzname() or "UTC",
+        "utc_offset": f"UTC{sign}{hours:02d}:{minutes:02d}",
+        "offset_minutes": offset_minutes,
+    }
+
+
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     config = load_config()
@@ -125,6 +141,7 @@ def home(request: Request):
             "config": config,
             "media": media,
             "player_status": player.status(),
+            "clock": clock_status(),
         },
     )
 
@@ -613,4 +630,4 @@ def thumbnail(request: Request, name: str):
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "player": player.status(), "network": network.status()}
+    return {"ok": True, "player": player.status(), "network": network.status(), "clock": clock_status()}

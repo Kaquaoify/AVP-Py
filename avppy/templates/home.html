@@ -28,6 +28,19 @@
 </section>
 
 <script>
+  let piClockEpoch = Date.parse('{{ clock.iso }}');
+  let piClockSyncedAt = performance.now();
+  let piClockOffsetMinutes = {{ clock.offset_minutes }};
+
+  function renderPiClock() {
+    const elapsed = performance.now() - piClockSyncedAt;
+    const piTime = new Date(piClockEpoch + elapsed + piClockOffsetMinutes * 60000);
+    const pad = value => String(value).padStart(2, '0');
+    document.getElementById('pi-clock').textContent =
+      `${pad(piTime.getUTCDate())}.${pad(piTime.getUTCMonth() + 1)}.${piTime.getUTCFullYear()} ` +
+      `${pad(piTime.getUTCHours())}:${pad(piTime.getUTCMinutes())}:${pad(piTime.getUTCSeconds())}`;
+  }
+
   async function refreshPlayerStatus() {
     try {
       const response = await fetch('/health', { cache: 'no-store' });
@@ -35,12 +48,21 @@
       const status = await response.json();
       document.getElementById('player-state').textContent = status.player.running ? 'actif' : 'inactif';
       document.getElementById('current-media').textContent = status.player.current_media || 'aucune';
+      piClockEpoch = Date.parse(status.clock.iso);
+      piClockSyncedAt = performance.now();
+      piClockOffsetMinutes = status.clock.offset_minutes;
+      document.getElementById('pi-timezone').textContent = `${status.clock.timezone} (${status.clock.utc_offset})`;
+      renderPiClock();
     } catch (_) {
       // La dernière valeur connue reste affichée si le Pi est momentanément indisponible.
     }
   }
 
-  setInterval(refreshPlayerStatus, 3000);
+  document.addEventListener('DOMContentLoaded', () => {
+    renderPiClock();
+    setInterval(renderPiClock, 1000);
+    setInterval(refreshPlayerStatus, 3000);
+  });
 </script>
 
 <section class="media-list">
@@ -67,4 +89,10 @@
   <p class="empty">Aucun média local.</p>
   {% endfor %}
 </section>
+
+<footer class="pi-clock-footer" aria-label="Horloge du Raspberry Pi">
+  <span>Heure du Raspberry Pi</span>
+  <time id="pi-clock" datetime="{{ clock.iso }}">{{ clock.display }}</time>
+  <span id="pi-timezone">{{ clock.timezone }} ({{ clock.utc_offset }})</span>
+</footer>
 {% endblock %}

@@ -149,6 +149,24 @@ button:disabled {
   gap: 10px;
 }
 
+.pi-clock-footer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 20px;
+  padding: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.pi-clock-footer time {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
 .media-row {
   display: grid;
   grid-template-columns: 36px 160px 1fr;
