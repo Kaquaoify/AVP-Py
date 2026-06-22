@@ -1,13 +1,17 @@
 :root {
-  color-scheme: light;
-  --bg: #f6f7f8;
-  --text: #1e2328;
-  --muted: #69717a;
-  --line: #d8dde3;
-  --panel: #ffffff;
-  --accent: #176c5d;
-  --accent-2: #a34c28;
-  --danger: #a92323;
+  color-scheme: dark;
+  --bg: #0f1513;
+  --text: #edf4f1;
+  --muted: #9baba5;
+  --line: #34433d;
+  --panel: #18211e;
+  --panel-soft: #202b27;
+  --panel-deep: #111815;
+  --accent: #21866c;
+  --accent-light: #59c7a8;
+  --accent-2: #a95732;
+  --danger: #a94146;
+  --danger-light: #ff8585;
 }
 
 * {
@@ -33,7 +37,7 @@ a {
   min-height: 56px;
   padding: 0 20px;
   border-bottom: 1px solid var(--line);
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .brand {
@@ -128,7 +132,7 @@ button:disabled {
 
 .secondary,
 .ghost {
-  background: #ffffff;
+  background: var(--panel-soft);
   color: var(--text);
   border-color: var(--line);
 }
@@ -229,7 +233,7 @@ dd {
 .settings-nav a {
   justify-content: flex-start;
   min-height: 48px;
-  background: #ffffff;
+  background: var(--panel-soft);
   color: var(--text);
   border-color: var(--line);
 }
@@ -247,7 +251,7 @@ dd {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #f8fafb;
+  background: var(--panel-soft);
 }
 
 .help-box summary {
@@ -278,7 +282,7 @@ dd {
   margin: 0;
   padding: 12px;
   border-radius: 6px;
-  background: #e9edf1;
+  background: var(--panel-deep);
   white-space: pre-wrap;
 }
 
@@ -291,12 +295,12 @@ dd {
   padding: 10px 12px;
   border-left: 4px solid var(--accent);
   border-radius: 4px;
-  background: #edf7f4;
+  background: #16372f;
 }
 
 .notice.warning {
   border-left-color: var(--accent-2);
-  background: #fff4ed;
+  background: #3a281f;
 }
 
 .source-picker {
@@ -316,7 +320,7 @@ dd {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--panel-soft);
   cursor: pointer;
 }
 
@@ -352,7 +356,7 @@ dd {
   padding: 14px;
   border: 1px dashed var(--line);
   border-radius: 8px;
-  background: #f8fafb;
+  background: var(--panel-soft);
 }
 
 .upload-box p {
@@ -372,7 +376,7 @@ dd {
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .managed-media-row img,
@@ -423,6 +427,8 @@ select {
   padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: 6px;
+  background: var(--panel-deep);
+  color: var(--text);
   font: inherit;
 }
 
@@ -483,7 +489,7 @@ textarea,
 table {
   width: 100%;
   border-collapse: collapse;
-  background: #ffffff;
+  background: var(--panel);
 }
 
 th,
@@ -516,7 +522,7 @@ th {
 }
 
 .log-tabs a {
-  background: #ffffff;
+  background: var(--panel-soft);
   color: var(--text);
   border-color: var(--line);
 }
@@ -529,11 +535,11 @@ th {
 
 .empty,
 .error {
-  color: var(--danger);
+  color: var(--danger-light);
 }
 
 .success {
-  color: var(--accent);
+  color: var(--accent-light);
 }
 
 @media (max-width: 720px) {
