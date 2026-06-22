@@ -150,13 +150,31 @@ Remplace `CHANGE_ME` par l'organisation ou l'utilisateur GitHub réel quand le d
 
 ## Mise à jour
 
-Depuis le Raspberry Pi :
+Se connecter au Raspberry Pi en SSH, puis lancer le script avec Bash :
 
 ```bash
-/opt/avp-py/app/scripts/update.sh
+bash /opt/avp-py/app/scripts/update.sh
 ```
 
-Le script [`scripts/update.sh`](scripts/update.sh) fait un `git pull`, met à jour les dépendances Python et redémarre le service.
+Ne pas ajouter `sudo` devant cette commande. Le script doit effectuer le `git pull`
+avec l'utilisateur propriétaire de l'installation ; il demande lui-même les droits
+administrateur quand ils sont nécessaires.
+
+Le script [`scripts/update.sh`](scripts/update.sh) :
+
+1. récupère la dernière version avec `git pull --ff-only` ;
+2. met à jour les paquets système nécessaires ;
+3. met à jour les dépendances Python ;
+4. réinstalle la définition du service et redémarre AVP-Py.
+
+Pour vérifier ensuite que le service fonctionne :
+
+```bash
+sudo systemctl status avp-py.service
+```
+
+La commande utilise explicitement `bash` car le fichier peut ne pas avoir le droit
+d'exécution après son téléchargement depuis Git.
 
 ---
 
