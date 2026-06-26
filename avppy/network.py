@@ -44,6 +44,7 @@ class NetworkController:
             "setup_active": self.setup_active,
             "last_error": self.last_error,
             "connected": has_network_connection(),
+            "local_ips": local_ip_addresses(),
             "hotspot_ssid": setup_ssid(config),
             "hotspot_password": config.get("setup_wifi_password", ""),
             "interface": config.get("network_interface", "wlan0"),
@@ -174,6 +175,31 @@ def has_network_connection() -> bool:
         ):
             return True
     return False
+
+
+def local_ip_addresses() -> list[str]:
+    if os.name == "nt":
+        return []
+
+    try:
+        result = subprocess.run(
+            ["hostname", "-I"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return []
+
+    if result.returncode != 0:
+        return []
+
+    addresses: list[str] = []
+    for value in result.stdout.split():
+        if ":" in value or value.startswith("127."):
+            continue
+        addresses.append(value)
+    return addresses
 
 
 def device_status() -> list[dict[str, str]]:

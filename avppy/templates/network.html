@@ -9,6 +9,24 @@
     <span>SSID setup: {{ network_status.hotspot_ssid }}</span>
   </div>
 
+  <div class="help-box stack">
+    <h2>Accès local</h2>
+    <p>
+      Adresse réseau :
+      <code>http://{{ config.device_name }}.local:8000</code>
+    </p>
+    <p>
+      IP locale :
+      {% if network_status.local_ips %}
+        {% for ip in network_status.local_ips %}
+          <code>http://{{ ip }}:8000</code>{% if not loop.last %} {% endif %}
+        {% endfor %}
+      {% else %}
+        <span class="muted">indisponible pour le moment</span>
+      {% endif %}
+    </p>
+  </div>
+
   <form method="post" action="/settings/network" class="stack">
     <div class="form-grid">
       <label>Interface Wi-Fi <input name="network_interface" value="{{ config.network_interface }}" required></label>
