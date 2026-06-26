@@ -6,11 +6,17 @@ Ce guide explique la page :
 Paramètres > Admin
 ```
 
-Cette page sert à configurer l'identité réseau de l'appareil et le mot de passe administrateur.
+## Objectif
 
-## 1. Nom de l'appareil
+La page `Admin` permet de configurer :
 
-Le champ `Nom de l'appareil` définit le nom visible du Raspberry Pi dans AVP-Py.
+- le nom de l'appareil ;
+- l'adresse locale en `.local` ;
+- le mot de passe administrateur.
+
+## 1. Modifier le nom de l'appareil
+
+Le champ `Nom de l'appareil` définit le nom visible dans AVP-Py.
 
 Il définit aussi l'adresse réseau locale :
 
@@ -30,7 +36,7 @@ Adresse correspondante :
 http://hall-entree.local:8000
 ```
 
-Les espaces et accents sont convertis en caractères simples et en tirets.
+Les espaces, accents et caractères spéciaux sont convertis en nom compatible réseau.
 
 Exemple :
 
@@ -38,7 +44,7 @@ Exemple :
 Hall Entrée
 ```
 
-devient généralement :
+devient :
 
 ```text
 hall-entree
@@ -60,11 +66,11 @@ Dans `Nouveau mot de passe` :
 2. clique sur `Sauvegarder` ;
 3. conserve ce mot de passe dans un endroit sûr.
 
-AVP-Py n'utilise pas de nom d'utilisateur : l'accès se fait uniquement par mot de passe.
+AVP-Py n'utilise pas de nom d'utilisateur : l'accès administrateur se fait uniquement par mot de passe.
 
-## 3. Après changement du nom de l'appareil
+## 3. Après changement du nom
 
-Après avoir modifié le nom de l'appareil, l'ancienne adresse `.local` peut ne plus répondre.
+Après modification du nom de l'appareil, l'ancienne adresse `.local` peut ne plus répondre.
 
 Utilise la nouvelle adresse indiquée par AVP-Py :
 
@@ -72,24 +78,30 @@ Utilise la nouvelle adresse indiquée par AVP-Py :
 http://nouveau-nom.local:8000
 ```
 
-Si l'adresse `.local` ne répond pas immédiatement :
+Si la nouvelle adresse ne répond pas immédiatement :
 
 - attends quelques secondes ;
 - recharge la page ;
 - vérifie que ton appareil est sur le même réseau ;
 - utilise l'adresse IP du Raspberry Pi si nécessaire.
 
-## 4. Bonnes pratiques
+L'adresse IP est visible dans :
+
+```text
+Paramètres > Réseau
+```
+
+## Bonnes pratiques
 
 Pour une installation client :
 
 - ne garde pas le mot de passe par défaut ;
-- choisis un nom d'appareil court et lisible ;
+- choisis un nom court et lisible ;
 - évite les espaces, accents et caractères spéciaux dans le nom ;
 - garde AVP-Py accessible uniquement sur le réseau local ;
-- ne publie jamais les fichiers de configuration contenant des tokens rclone.
+- ne publie jamais de configuration contenant un token rclone.
 
-## 5. Exemple de configuration
+## Exemples
 
 Pour un écran situé dans un hall d'entrée :
 
@@ -104,3 +116,9 @@ Pour un écran en salle d'attente :
 Nom de l'appareil : salle-attente
 Adresse web       : http://salle-attente.local:8000
 ```
+
+## Guides liés
+
+- [Réglages réseau](RESEAU.md)
+- [Premiers pas](PREMIERS_PAS.md)
+- [FAQ](FAQ.md)

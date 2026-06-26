@@ -6,21 +6,30 @@ Ce guide explique la page :
 Paramètres > Horaires
 ```
 
-Les horaires définissent quand AVP-Py doit lire les vidéos, synchroniser les médias et redémarrer le Raspberry Pi.
+## Objectif
 
-## 1. Jours actifs
+Les horaires définissent :
 
-La section `Jours actifs` permet de choisir les jours où la lecture automatique est autorisée.
+- les jours où la lecture est autorisée ;
+- la plage horaire de lecture ;
+- l'heure de synchronisation des médias ;
+- l'heure du redémarrage quotidien.
 
-Exemple :
+## 1. Choisir les jours actifs
 
-- coche `Lun`, `Mar`, `Mer`, `Jeu`, `Ven` pour une lecture uniquement en semaine ;
-- coche tous les jours pour une lecture quotidienne ;
-- décoche un jour pour empêcher la lecture automatique ce jour-là.
+Dans `Jours actifs`, coche les jours où l'écran doit diffuser les vidéos.
 
-## 2. Début et fin de lecture
+Exemples :
 
-Les champs suivants contrôlent la plage horaire de lecture :
+- tous les jours : coche `Lun` à `Dim` ;
+- semaine uniquement : coche `Lun` à `Ven` ;
+- fermeture le dimanche : décoche `Dim`.
+
+Un jour non coché empêche la lecture automatique ce jour-là.
+
+## 2. Définir la plage de lecture
+
+Les champs à régler sont :
 
 - `Début lecture` ;
 - `Fin lecture`.
@@ -32,13 +41,13 @@ Début lecture : 08:00
 Fin lecture   : 20:00
 ```
 
-Dans cet exemple, AVP-Py lance ou maintient la lecture entre 08:00 et 20:00, les jours actifs.
+Dans cet exemple, AVP-Py diffuse les vidéos entre 08:00 et 20:00, uniquement les jours actifs.
 
 En dehors de cette plage, la lecture automatique s'arrête.
 
-## 3. Synchronisation des médias
+## 3. Définir l'heure de synchronisation
 
-Le champ `Synchro médias` définit l'heure à laquelle AVP-Py lance la synchronisation rclone.
+Le champ `Synchro médias` définit l'heure de synchronisation rclone.
 
 Exemple :
 
@@ -46,23 +55,27 @@ Exemple :
 Synchro médias : 03:00
 ```
 
-La synchronisation n'est utilisée que si la source des médias est `Synchronisation rclone`.
+Cette synchronisation est utilisée uniquement si la source des médias est :
 
-Si la source active est `Gestion locale depuis l'interface web`, l'heure de synchronisation reste enregistrée, mais la synchronisation rclone est mise en pause.
+```text
+Synchronisation rclone
+```
 
-## 4. Redémarrage quotidien
+Si AVP-Py est en mode local, l'heure reste enregistrée mais la synchronisation rclone est ignorée.
+
+## 4. Configurer le redémarrage quotidien
 
 Le champ `Redémarrage` définit l'heure du redémarrage automatique.
 
 La case `Redémarrage quotidien activé` permet d'activer ou désactiver ce comportement.
 
-Exemple recommandé pour un appareil d'affichage :
+Exemple recommandé :
 
 ```text
 Redémarrage : 06:00
 ```
 
-Un redémarrage quotidien peut aider à garder un Raspberry Pi stable sur une installation longue durée.
+Un redémarrage quotidien peut aider à garder une installation Raspberry Pi stable dans le temps.
 
 ## 5. Sauvegarder
 
@@ -72,16 +85,26 @@ Après modification :
 2. vérifie les heures ;
 3. clique sur `Sauvegarder`.
 
-Les nouveaux horaires sont appliqués par le service AVP-Py.
+Les nouveaux réglages sont utilisés par le service AVP-Py.
 
-## 6. Points à vérifier
+## Dépannage
 
-Si la lecture ne se lance pas au moment attendu :
+Si la lecture ne démarre pas au moment prévu :
 
 - vérifie que le jour actuel est coché ;
-- vérifie que l'heure interne du Raspberry Pi est correcte ;
-- vérifie la plage `Début lecture` / `Fin lecture` ;
-- vérifie qu'au moins une vidéo est disponible localement ;
-- vérifie que le service AVP-Py tourne.
+- vérifie l'heure interne du Raspberry Pi sur la page d'accueil ;
+- vérifie `Début lecture` et `Fin lecture` ;
+- vérifie qu'au moins une vidéo est disponible ;
+- vérifie que le service AVP-Py fonctionne.
 
-L'heure interne du Raspberry Pi est affichée en bas à droite de la page d'accueil.
+Commande utile en SSH :
+
+```bash
+sudo systemctl status avp-py.service
+```
+
+## Guides liés
+
+- [Premiers pas](PREMIERS_PAS.md)
+- [Configuration rclone](RCLONE.md)
+- [Utilisation en mode local](MODE_LOCAL.md)

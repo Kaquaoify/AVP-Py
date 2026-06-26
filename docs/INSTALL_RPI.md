@@ -1,46 +1,70 @@
 # Installation Raspberry Pi
 
-## 1. Installer l'OS
+Ce guide décrit l'installation d'AVP-Py sur un Raspberry Pi.
 
-Utilise Raspberry Pi Imager avec :
+## Prérequis
+
+- Raspberry Pi 5 recommandé ;
+- Raspberry Pi OS Lite 64-bit ;
+- accès Internet pendant l'installation ;
+- accès SSH ou clavier branché au Raspberry Pi ;
+- dépôt GitHub AVP-Py accessible.
+
+## 1. Installer Raspberry Pi OS
+
+Avec Raspberry Pi Imager, installe :
 
 ```text
 Raspberry Pi OS Lite 64-bit
 ```
 
-Active SSH dans l'image si tu veux gérer l'installation à distance.
+Active SSH si tu veux faire l'installation à distance.
+Il faut retenir le nom de l'appareil indiqué lors de cette installation.
 
 ## 2. Premier démarrage
 
-Connecte-toi au Raspberry Pi en SSH, puis mets le système à jour :
+Connecte-toi au Raspberry Pi en SSH ou via la console, puis mets le système à jour :
 
 ```bash
 sudo apt-get update
 sudo apt-get upgrade -y
 ```
 
+Redémarre si le système le demande.
+
 ## 3. Installer AVP-Py
 
-Quand le dépôt GitHub public existe, lance :
+Télécharge le script d'installation :
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/CHANGE_ME/AVP-Py/main/scripts/install.sh -o install-avp-py.sh
+curl -fsSL https://raw.githubusercontent.com/Kaquaoify/AVP-Py/main/scripts/install.sh -o install-avp-py.sh
 chmod +x install-avp-py.sh
-AVP_HOSTNAME=hall-entree ./install-avp-py.sh https://github.com/CHANGE_ME/AVP-Py.git
 ```
 
-Remplace `hall-entree` par le nom lisible de l'appareil.
-
-### Boîtier Argon40 One V3
-
-Le script AVP-Py installe par défaut le logiciel officiel Argon40 qui gère le
-ventilateur et le bouton d'alimentation. Il ne relance pas l'installateur si
-`argononed` est déjà installé.
-
-Pour ignorer cette installation sur un Raspberry Pi sans boîtier Argon40 :
+Lance l'installation :
 
 ```bash
-AVP_INSTALL_ARGON40=0 AVP_HOSTNAME=hall-entree ./install-avp-py.sh https://github.com/CHANGE_ME/AVP-Py.git
+./install-avp-py.sh https://github.com/Kaquaoify/AVP-Py.git
+```
+
+Pour définir le nom réseau pendant l'installation :
+
+```bash
+AVP_HOSTNAME=hall-entree ./install-avp-py.sh https://github.com/Kaquaoify/AVP-Py.git
+```
+
+Remplace `hall-entree` par le nom souhaité pour l'appareil.
+
+## 4. Boîtier Argon40
+
+Par défaut, le script AVP-Py installe aussi le logiciel officiel Argon40 pour gérer le ventilateur et le bouton d'alimentation des boîtiers compatibles.
+
+Il ne relance pas l'installateur si `argononed` est déjà installé.
+
+Pour ignorer cette étape sur un Raspberry Pi sans boîtier Argon40 :
+
+```bash
+AVP_INSTALL_ARGON40=0 AVP_HOSTNAME=hall-entree ./install-avp-py.sh https://github.com/Kaquaoify/AVP-Py.git
 ```
 
 Après installation, configure au besoin la courbe du ventilateur avec :
@@ -49,15 +73,14 @@ Après installation, configure au besoin la courbe du ventilateur avec :
 argonone-config
 ```
 
-Le script Argon40 peut mettre à jour les paquets, l'EEPROM et la configuration
-matérielle. Redémarre le Raspberry Pi après la première installation.
+Le script Argon40 peut mettre à jour des paquets, l'EEPROM et la configuration matérielle. Redémarre le Raspberry Pi après la première installation.
 
-## 4. Ouvrir l'interface
+## 5. Ouvrir l'interface web
 
-Depuis un navigateur sur le même réseau :
+Depuis un navigateur connecté au même réseau :
 
 ```text
-http://hall-entree.local:8000
+http://nom-appareil.local:8000
 ```
 
 Mot de passe par défaut :
@@ -66,9 +89,51 @@ Mot de passe par défaut :
 1234
 ```
 
-## 4b. Installation chez un client sans réseau connu
+Change ce mot de passe dans :
 
-Si le Raspberry Pi démarre sans LAN et sans Wi-Fi connu, il crée automatiquement un réseau de configuration :
+```text
+Paramètres > Admin
+```
+
+## 6. Premier réglage des médias
+
+Dans :
+
+```text
+Paramètres > Configuration des dossiers
+```
+
+Choisis une source :
+
+- `Synchronisation rclone` pour utiliser Google Drive ou un stockage distant ;
+- `Gestion locale depuis l'interface web` pour envoyer les vidéos directement dans AVP-Py.
+
+Voir aussi :
+
+- [Configuration rclone](RCLONE.md)
+- [Utilisation en mode local](MODE_LOCAL.md)
+
+## 7. Premier réglage des horaires
+
+Dans :
+
+```text
+Paramètres > Horaires
+```
+
+Configure :
+
+1. les jours actifs ;
+2. l'heure de début de lecture ;
+3. l'heure de fin de lecture ;
+4. l'heure de synchronisation ;
+5. le redémarrage quotidien.
+
+Voir [Configuration des horaires](HORAIRES.md).
+
+## 8. Installation chez un client sans réseau connu
+
+Si le Raspberry Pi démarre sans Ethernet et sans Wi-Fi connu, AVP-Py crée automatiquement un hotspot de configuration :
 
 ```text
 AVP-SETUP-hall-entree
@@ -80,46 +145,39 @@ Mot de passe par défaut :
 avpsetup123
 ```
 
-Connecte un téléphone à ce réseau, puis ouvre :
+Connecte un téléphone ou un ordinateur à ce Wi-Fi, puis ouvre :
 
 ```text
 http://10.42.0.1:8000/setup/wifi
 ```
 
-Choisis le Wi-Fi du client, entre le mot de passe et valide. Si la connexion réussit, le hotspot est coupé et le Pi rejoint le réseau client.
+Choisis le Wi-Fi client, entre le mot de passe et valide.
 
-Tu peux modifier le nom du hotspot, son mot de passe, l'interface Wi-Fi et le délai de détection dans :
+Voir [Installation avec nouveau réseau Internet](NOUVEAU_RESEAU.md).
 
-```text
-Paramètres > Réseau
-```
+## 9. Vérifier le service
 
-## 5. Configurer les médias
-
-Dans `Paramètres > Configuration des dossiers` :
-
-1. Choisis `Synchronisation rclone` ou `Gestion locale depuis l'interface web`.
-2. En mode rclone, renseigne le remote, le chemin distant et `rclone.conf`, puis teste la connexion.
-3. En mode manuel, sauvegarde puis ouvre `Paramètres > Gestion des médias` pour envoyer les vidéos.
-
-Le passage en mode manuel met rclone en pause sans effacer sa configuration. Revenir
-au mode rclone restaure donc immédiatement les réglages précédents.
-
-## 6. Configurer les horaires
-
-Dans `Paramètres > Horaires` :
-
-1. Coche les jours actifs.
-2. Renseigne l'heure de début et l'heure de fin.
-3. Renseigne l'heure de synchronisation.
-4. Garde ou désactive le redémarrage quotidien.
-
-## 7. Mettre à jour
+Après installation :
 
 ```bash
-/opt/avp-py/app/scripts/update.sh
+sudo systemctl status avp-py.service
+```
+
+Commandes utiles :
+
+```bash
+sudo systemctl restart avp-py.service
+sudo journalctl -u avp-py.service -f
 ```
 
 ## Notes écran noir
 
-AVP-Py lance `mpv` en plein écran avec une fenêtre noire en mode idle. Pour un appareil de production, Raspberry Pi OS Lite évite l'affichage d'un bureau. Les messages de boot peuvent encore apparaître avant le lancement du service.
+AVP-Py lance `mpv` en plein écran avec une fenêtre noire en mode idle.
+
+Sur un appareil de production, Raspberry Pi OS Lite évite l'affichage d'un bureau. Des messages de boot peuvent encore apparaître avant le lancement du service.
+
+## Guides liés
+
+- [Premiers pas](PREMIERS_PAS.md)
+- [Mise à jour](UPDATE.md)
+- [Réglages réseau](RESEAU.md)

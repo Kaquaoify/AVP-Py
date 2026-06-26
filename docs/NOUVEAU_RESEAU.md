@@ -1,8 +1,12 @@
 # Installation avec nouveau réseau Internet
 
-Ce guide explique comment connecter un Raspberry Pi AVP-Py à un nouveau réseau lorsqu'il arrive sur un site où il ne connaît pas encore le Wi-Fi.
+Ce guide explique comment connecter un Raspberry Pi AVP-Py à un nouveau Wi-Fi lorsqu'il arrive sur un site client.
 
-Le principe : si le Raspberry Pi ne trouve aucun réseau connu au démarrage, AVP-Py démarre automatiquement un hotspot de configuration.
+## Objectif
+
+Si le Raspberry Pi ne trouve aucun réseau connu au démarrage, AVP-Py démarre automatiquement un hotspot de configuration.
+
+Ce hotspot permet de connecter le Raspberry Pi au Wi-Fi du client depuis un téléphone ou un ordinateur.
 
 ## 1. Démarrer le Raspberry Pi sur le nouveau site
 
@@ -10,11 +14,11 @@ Branche :
 
 1. l'alimentation ;
 2. l'écran, si nécessaire ;
-3. le réseau Ethernet, si disponible.
+3. le câble Ethernet, si disponible.
 
 Si aucun Ethernet ni Wi-Fi connu n'est disponible, attends le délai de détection configuré.
 
-Par défaut, le délai est de 75 secondes.
+Par défaut, ce délai est de 75 secondes.
 
 ## 2. Se connecter au Wi-Fi de configuration
 
@@ -30,13 +34,13 @@ Exemple :
 AVP-SETUP-hall-entree
 ```
 
-Le mot de passe par défaut est :
+Mot de passe par défaut :
 
 ```text
 avpsetup123
 ```
 
-Depuis un téléphone ou un ordinateur, connecte-toi à ce réseau Wi-Fi.
+Connecte un téléphone ou un ordinateur à ce réseau.
 
 ## 3. Ouvrir la page de configuration Wi-Fi
 
@@ -64,7 +68,7 @@ Si la connexion réussit :
 
 - le hotspot de configuration s'arrête ;
 - le Raspberry Pi rejoint le réseau client ;
-- AVP-Py redevient accessible depuis le réseau client.
+- AVP-Py redevient accessible depuis ce réseau.
 
 ## 5. Ouvrir AVP-Py sur le nouveau réseau
 
@@ -80,7 +84,7 @@ Exemple :
 http://hall-entree.local:8000
 ```
 
-Si le nom `.local` ne répond pas, récupère l'adresse IP du Raspberry Pi depuis la box ou le routeur du client, puis ouvre :
+Si l'adresse `.local` ne répond pas, récupère l'adresse IP du Raspberry Pi depuis la box ou le routeur, puis ouvre :
 
 ```text
 http://adresse-ip-du-pi:8000
@@ -88,7 +92,7 @@ http://adresse-ip-du-pi:8000
 
 ## 6. Modifier les réglages du hotspot
 
-Une fois connecté à l'interface AVP-Py, va dans :
+Une fois connecté à AVP-Py, va dans :
 
 ```text
 Paramètres > Réseau
@@ -97,14 +101,14 @@ Paramètres > Réseau
 Cette page permet de modifier :
 
 - l'interface Wi-Fi ;
-- le délai avant démarrage du setup ;
+- le délai avant démarrage du hotspot ;
 - le préfixe du SSID setup ;
 - le mot de passe setup ;
 - l'activation du hotspot de secours.
 
 Le mot de passe setup doit contenir au moins 8 caractères.
 
-## 7. Dépannage
+## Dépannage
 
 Si le hotspot n'apparaît pas :
 
@@ -121,3 +125,9 @@ Si la connexion au Wi-Fi client échoue :
 - rapproche le Raspberry Pi du point d'accès.
 
 AVP-Py n'a pas besoin d'être exposé sur Internet pour cette opération.
+
+## Guides liés
+
+- [Réglages réseau](RESEAU.md)
+- [Premiers pas](PREMIERS_PAS.md)
+- [FAQ](FAQ.md)

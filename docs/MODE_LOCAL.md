@@ -6,7 +6,17 @@ Ce guide explique le mode :
 Gestion locale depuis l'interface web
 ```
 
-Ce mode permet d'envoyer, supprimer, renommer et organiser les vidéos directement depuis AVP-Py, sans Google Drive ni rclone actif.
+## Objectif
+
+Le mode local permet de gérer les vidéos directement dans AVP-Py, sans Google Drive ni synchronisation rclone active.
+
+Depuis l'interface web, tu peux :
+
+- envoyer des vidéos ;
+- renommer des vidéos ;
+- supprimer des vidéos ;
+- modifier l'ordre de lecture ;
+- publier la playlist.
 
 ## 1. Activer le mode local
 
@@ -38,22 +48,20 @@ Va dans :
 Paramètres > Gestion des médias
 ```
 
-Ou utilise le bouton `Gérer les médias` si disponible depuis la page d'accueil.
-
 La page affiche :
 
 - le nombre de vidéos ;
 - l'espace disque disponible ;
 - la liste des vidéos locales ;
-- les actions d'envoi, suppression, renommage et ordre de lecture.
+- les actions disponibles pour chaque fichier.
 
 ## 3. Envoyer des vidéos
 
-Dans la zone `Sélectionner une ou plusieurs vidéos` :
+Dans `Sélectionner une ou plusieurs vidéos` :
 
 1. choisis une ou plusieurs vidéos ;
 2. clique sur `Envoyer les vidéos` ;
-3. laisse la page ouverte pendant l'envoi.
+3. garde la page ouverte pendant l'envoi.
 
 Formats vidéo acceptés :
 
@@ -61,11 +69,11 @@ Formats vidéo acceptés :
 .avi, .m4v, .mkv, .mov, .mp4, .mpeg, .mpg, .webm
 ```
 
-Si un fichier porte le même nom qu'un fichier existant, AVP-Py ajoute un suffixe pour éviter d'écraser l'ancien fichier.
+Si un fichier porte déjà le même nom, AVP-Py ajoute automatiquement un suffixe pour éviter d'écraser le fichier existant.
 
 ## 4. Renommer une vidéo
 
-Dans la liste des vidéos :
+Dans la liste des médias :
 
 1. modifie le nom dans le champ de la vidéo ;
 2. garde une extension vidéo valide ;
@@ -77,7 +85,7 @@ Exemple :
 accueil-hall.mp4
 ```
 
-## 5. Changer l'ordre de lecture
+## 5. Modifier l'ordre de lecture
 
 Utilise les boutons :
 
@@ -86,9 +94,9 @@ Utilise les boutons :
 ↓
 ```
 
-Ils permettent de monter ou descendre une vidéo dans l'ordre de lecture.
+Ils permettent de monter ou descendre une vidéo dans la playlist.
 
-L'ordre est conservé par AVP-Py dans sa configuration locale.
+L'ordre choisi est conservé localement par AVP-Py.
 
 ## 6. Supprimer une vidéo
 
@@ -104,7 +112,7 @@ La suppression est définitive côté Raspberry Pi.
 
 ## 7. Publier la playlist
 
-Après avoir ajouté ou réorganisé des vidéos, clique sur :
+Après ajout, suppression, renommage ou changement d'ordre, clique sur :
 
 ```text
 Publier la playlist
@@ -114,12 +122,18 @@ AVP-Py régénère la playlist utilisée par le lecteur.
 
 ## 8. Revenir au mode rclone
 
-Pour revenir à Google Drive ou à une autre source distante :
+Pour revenir à une source distante :
 
 1. va dans `Paramètres > Configuration des dossiers` ;
 2. choisis `Synchronisation rclone` ;
-3. sauvegarde ;
-4. teste la connexion si nécessaire ;
+3. clique sur `Sauvegarder` ;
+4. teste la connexion ;
 5. lance une synchronisation.
 
-Attention : en mode rclone, le dossier distant redevient la source de vérité. Les fichiers locaux absents du dossier distant peuvent être supprimés lors de la prochaine synchronisation.
+Attention : en mode rclone, le dossier distant redevient la source de référence. Les fichiers locaux absents du dossier distant peuvent être supprimés lors de la prochaine synchronisation.
+
+## Guides liés
+
+- [Configuration rclone](RCLONE.md)
+- [Configuration des horaires](HORAIRES.md)
+- [FAQ](FAQ.md)

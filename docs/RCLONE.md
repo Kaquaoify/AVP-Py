@@ -8,34 +8,40 @@ La page concernée est :
 Paramètres > Configuration des dossiers
 ```
 
-## 1. Principe
+## Objectif
 
 En mode `Synchronisation rclone`, AVP-Py synchronise un dossier distant vers le dossier local du Raspberry Pi.
 
-Le dossier distant est la source de vérité.
+Le dossier distant est la source de référence. Si un fichier est supprimé du dossier distant, il sera supprimé localement lors du prochain `rclone sync`.
 
-Conséquence importante : si un fichier est supprimé du dossier distant, il sera supprimé du Raspberry Pi lors du prochain `rclone sync`.
+## 1. Activer le mode rclone
 
-## 2. Informations à renseigner dans AVP-Py
+Va dans :
 
-Dans `Paramètres > Configuration des dossiers`, sélectionne :
+```text
+Paramètres > Configuration des dossiers
+```
+
+Dans `Source des médias`, sélectionne :
 
 ```text
 Synchronisation rclone
 ```
 
-Puis renseigne :
+## 2. Renseigner les champs AVP-Py
+
+Les champs à compléter sont :
 
 - `Dossier local sur le Raspberry Pi` : dossier où les vidéos seront stockées localement ;
 - `Nom du remote rclone` : par exemple `gdrive` ;
 - `Chemin du dossier distant` : par exemple `Affichage/Hall entree` ;
-- `Contenu complet de rclone.conf` : le bloc de configuration rclone, token inclus.
+- `Contenu complet de rclone.conf` : bloc de configuration rclone complet, token inclus.
 
-AVP-Py attend le contenu complet de `rclone.conf`, pas uniquement le token.
+AVP-Py attend le contenu complet du bloc `rclone.conf`, pas uniquement le token.
 
-## 3. Créer la configuration rclone
+## 3. Créer le remote rclone
 
-Sur un ordinateur disposant d'un navigateur, installe rclone puis lance :
+Sur un ordinateur avec navigateur, installe rclone puis lance :
 
 ```bash
 rclone config
@@ -46,16 +52,19 @@ Crée un nouveau remote :
 1. choisis `n` pour créer un nouveau remote ;
 2. nomme-le `gdrive` ;
 3. choisis le stockage `drive` pour Google Drive ;
-4. suis l'authentification dans le navigateur ;
-5. termine la configuration.
+4. laisse `client_id` et `client_secret` vides sauf besoin particulier ;
+5. choisis le niveau d'accès souhaité ;
+6. accepte l'authentification automatique ;
+7. connecte-toi au compte Google dans le navigateur ;
+8. termine l'assistant.
 
-Ensuite, affiche le chemin du fichier de configuration :
+Affiche ensuite le chemin du fichier généré :
 
 ```bash
 rclone config file
 ```
 
-Ouvre le fichier indiqué et copie tout le bloc correspondant au remote.
+Ouvre le fichier indiqué et copie tout le bloc du remote.
 
 Exemple de structure :
 
@@ -66,7 +75,7 @@ scope = drive
 token = {"access_token":"...","refresh_token":"..."}
 ```
 
-Le vrai fichier contient des valeurs privées. Ne les publie jamais.
+Le vrai fichier contient des valeurs privées. Ne le publie jamais dans GitHub, dans des captures d'écran ou dans des logs.
 
 ## 4. Coller la configuration dans AVP-Py
 
@@ -85,7 +94,7 @@ Clique sur :
 Tester la connexion
 ```
 
-AVP-Py lance une commande rclone de test sur le dossier distant.
+AVP-Py vérifie que rclone peut lire le dossier distant.
 
 Si le test échoue, vérifie :
 
@@ -103,9 +112,7 @@ Clique sur :
 Synchroniser maintenant
 ```
 
-AVP-Py lance la synchronisation immédiatement.
-
-Les fichiers du dossier distant sont copiés vers le dossier local. Les miniatures et métadonnées sont ensuite régénérées.
+AVP-Py copie les fichiers du dossier distant vers le dossier local, puis régénère les miniatures et les métadonnées.
 
 ## 7. Synchronisation automatique
 
@@ -121,7 +128,7 @@ Champ :
 Synchro médias
 ```
 
-Cette synchronisation automatique est ignorée si AVP-Py est en mode local.
+Cette synchronisation est ignorée si AVP-Py est en mode local.
 
 ## 8. Passer temporairement en mode local
 
@@ -132,8 +139,14 @@ Dans ce cas :
 - rclone est mis en pause ;
 - la configuration rclone n'est pas effacée ;
 - l'heure de synchronisation reste enregistrée ;
-- les modifications locales deviennent possibles depuis l'interface web.
+- les modifications locales deviennent possibles.
 
-En revenant au mode rclone, les anciens réglages rclone sont réutilisés.
+En revenant au mode rclone, les anciens réglages sont réutilisés.
 
-Attention : au prochain `rclone sync`, le dossier distant redevient la référence.
+Attention : au prochain `rclone sync`, le dossier distant redevient la source de référence.
+
+## Guides liés
+
+- [Utilisation en mode local](MODE_LOCAL.md)
+- [Configuration des horaires](HORAIRES.md)
+- [FAQ](FAQ.md)
