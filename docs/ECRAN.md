@@ -88,7 +88,7 @@ En cas d'échec, AVP-Py écrit l'erreur dans ses journaux. Pour l'allumage, il r
 
 Le contrôle CEC fonctionne indépendamment de la lecture vidéo. Une erreur CEC ne bloque donc ni le lecteur, ni la synchronisation, ni les autres tâches planifiées.
 
-Si aucun écran n'est détecté au démarrage, `mpv` peut quitter parce qu'aucun connecteur HDMI n'est disponible. AVP-Py conserve alors la playlist en attente et retente automatiquement le lancement toutes les dix secondes. Lorsqu'un écran est branché, la lecture doit démarrer sans utiliser le bouton `Play`.
+Si aucun écran n'est détecté au démarrage, AVP-Py conserve la playlist en attente et retente automatiquement le lancement toutes les dix secondes. Lorsqu'un écran est branché, `mpv` utilise temporairement une sortie audio silencieuse si l'audio HDMI n'est pas encore prêt. La vidéo doit ainsi démarrer sans utiliser le bouton `Play`.
 
 ## Dépannage
 

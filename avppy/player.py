@@ -34,7 +34,7 @@ class PlayerController:
         current_path = self.get_property("path") if running else None
         return {
             "running": running,
-            "playlist_loaded": running and self.playlist_loaded,
+            "playlist_loaded": self.is_playlist_active(),
             "ipc": str(self.ipc_path),
             "current_media": Path(str(current_path)).name if current_path else "",
         }
@@ -43,7 +43,9 @@ class PlayerController:
         return self.process is not None and self.process.poll() is None
 
     def is_playlist_active(self) -> bool:
-        return self.is_running() and self.ipc_path.exists() and self.playlist_loaded
+        if not self.is_running() or not self.ipc_path.exists() or not self.playlist_loaded:
+            return False
+        return self.get_property("idle-active") is not True
 
     def ensure_idle(self, config: dict[str, Any]) -> bool:
         if os.name == "nt":
@@ -64,6 +66,7 @@ class PlayerController:
             "--fs",
             "--no-terminal",
             "--really-quiet",
+            "--audio-fallback-to-null=yes",
             "--osc=no",
             "--osd-level=0",
             "--cursor-autohide=always",

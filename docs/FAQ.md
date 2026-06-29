@@ -80,7 +80,7 @@ Le Raspberry Pi doit idéalement être relié directement au téléviseur. Consu
 
 ## Pourquoi la console apparaît-elle si l'écran est branché après le démarrage ?
 
-Sans écran détecté, `mpv` peut quitter parce qu'aucun connecteur HDMI n'est disponible. AVP-Py doit conserver la playlist en attente et retenter automatiquement le lancement toutes les dix secondes.
+Après un branchement HDMI tardif, le connecteur vidéo peut être disponible avant la sortie audio HDMI. Dans ce cas, `mpv` doit utiliser temporairement une sortie audio silencieuse pour continuer la vidéo au lieu d'abandonner la lecture.
 
 Après avoir branché l'écran, attends quelques secondes. La lecture doit démarrer sans appuyer sur `Play`.
 
