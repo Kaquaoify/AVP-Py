@@ -84,7 +84,11 @@ AVP-Py tente alors :
 - de mettre le téléviseur en veille à la fin de la plage ;
 - de remettre l'écran dans l'état attendu après un redémarrage du service.
 
-En cas d'échec, AVP-Py écrit l'erreur dans ses journaux et réessaie après cinq minutes.
+En cas d'échec, AVP-Py écrit l'erreur dans ses journaux. Pour l'allumage, il réessaie progressivement après 10 secondes, 30 secondes, puis toutes les minutes afin de détecter rapidement un écran branché plus tard. Pour la mise en veille, le délai augmente jusqu'à cinq minutes.
+
+Le contrôle CEC fonctionne indépendamment de la lecture vidéo. Une erreur CEC ne bloque donc ni le lecteur, ni la synchronisation, ni les autres tâches planifiées.
+
+Si aucun écran n'est détecté au démarrage, `mpv` peut quitter parce qu'aucun connecteur HDMI n'est disponible. AVP-Py conserve alors la playlist en attente et retente automatiquement le lancement toutes les dix secondes. Lorsqu'un écran est branché, la lecture doit démarrer sans utiliser le bouton `Play`.
 
 ## Dépannage
 

@@ -25,6 +25,8 @@ class Scheduler:
         self.display_state_key: tuple[str, bool] | None = None
         self.display_command_ok = False
         self.display_retry_at = 0.0
+        self.display_command_thread: threading.Thread | None = None
+        self.display_failure_count = 0
 
     def start(self) -> None:
         if self.thread and self.thread.is_alive():
@@ -44,18 +46,28 @@ class Scheduler:
     def tick(self) -> None:
         config = load_config()
         now = datetime.now()
-        player.ensure_idle(config)
-        self._handle_playback(config, now)
         self._handle_display(config, now)
+        self._handle_playback(config, now)
+        if not self._is_playback_time(config, now):
+            player.ensure_idle(config)
         self._handle_sync(config, now)
         self._handle_reboot(config, now)
 
     def _handle_playback(self, config: dict, now: datetime) -> None:
         should_play = self._is_playback_time(config, now)
-        if should_play and not self.playback_active:
-            count = player.play_playlist(config["local_media_dir"], config)
-            self.playback_active = count > 0
-            LOGGER.info("Scheduled playback started with %s media files", count)
+        if should_play and (not self.playback_active or not player.is_playlist_active()):
+            result = player.play_playlist(config["local_media_dir"], config)
+            self.playback_active = result.started
+            if result.started:
+                LOGGER.info(
+                    "Scheduled playback started with %s media files",
+                    result.media_count,
+                )
+            elif result.media_count:
+                LOGGER.info(
+                    "Scheduled playback is waiting for mpv with %s media files queued",
+                    result.media_count,
+                )
             return
 
         if not should_play and self.playback_active:
@@ -68,6 +80,10 @@ class Scheduler:
             self.display_state_key = None
             self.display_command_ok = False
             self.display_retry_at = 0.0
+            self.display_failure_count = 0
+            return
+
+        if self.display_command_thread and self.display_command_thread.is_alive():
             return
 
         should_be_on = self._is_playback_time(config, now)
@@ -78,26 +94,64 @@ class Scheduler:
         if state_key == self.display_state_key:
             if self.display_command_ok or monotonic_now < self.display_retry_at:
                 return
-
-        if should_be_on:
-            result = cec_controller.power_on(adapter)
-            action = "power on"
         else:
-            result = cec_controller.standby(adapter)
-            action = "standby"
+            self.display_failure_count = 0
+
+        self.display_command_thread = threading.Thread(
+            target=self._run_display_action,
+            args=(state_key, adapter, should_be_on),
+            name="avp-cec",
+            daemon=True,
+        )
+        self.display_command_thread.start()
+
+    def _run_display_action(
+        self,
+        state_key: tuple[str, bool],
+        adapter: str,
+        should_be_on: bool,
+    ) -> None:
+        action = "power on" if should_be_on else "standby"
+        try:
+            result = (
+                cec_controller.power_on(adapter)
+                if should_be_on
+                else cec_controller.standby(adapter)
+            )
+        except Exception:
+            self.display_state_key = state_key
+            self.display_command_ok = False
+            retry_delay = self._next_display_retry_delay(should_be_on)
+            self.display_retry_at = time.monotonic() + retry_delay
+            LOGGER.exception(
+                "Scheduled display action=%s crashed; retry in %s seconds",
+                action,
+                retry_delay,
+            )
+            return
 
         self.display_state_key = state_key
         self.display_command_ok = result.ok
-        self.display_retry_at = 0.0 if result.ok else monotonic_now + 300
         if result.ok:
+            self.display_failure_count = 0
+            self.display_retry_at = 0.0
             LOGGER.info("Scheduled display action=%s succeeded: %s", action, result.message)
         else:
+            retry_delay = self._next_display_retry_delay(should_be_on)
+            self.display_retry_at = time.monotonic() + retry_delay
             LOGGER.error(
-                "Scheduled display action=%s failed; retry in 300 seconds: %s %s",
+                "Scheduled display action=%s failed; retry in %s seconds: %s %s",
                 action,
+                retry_delay,
                 result.message,
                 result.details[-500:],
             )
+
+    def _next_display_retry_delay(self, should_be_on: bool) -> int:
+        delays = (10, 30, 60) if should_be_on else (10, 30, 60, 300)
+        delay = delays[min(self.display_failure_count, len(delays) - 1)]
+        self.display_failure_count += 1
+        return delay
 
     def _handle_sync(self, config: dict, now: datetime) -> None:
         if config.get("media_source", "rclone") != "rclone":

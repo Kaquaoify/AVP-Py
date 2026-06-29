@@ -61,9 +61,7 @@ app.mount("/static", StaticFiles(directory=str(PACKAGE_DIR / "static")), name="s
 
 @app.on_event("startup")
 def startup() -> None:
-    config = load_config()
     network.start()
-    player.ensure_idle(config)
     scheduler.start()
     LOGGER.info("AVP-Py started")
 
@@ -161,8 +159,8 @@ async def control(request: Request):
     form = await request.form()
     action = str(form.get("action", ""))
     if action == "play":
-        count = player.play_playlist(config["local_media_dir"], config)
-        scheduler.playback_active = count > 0
+        result = player.play_playlist(config["local_media_dir"], config)
+        scheduler.playback_active = result.started
     elif action == "pause":
         player.pause_to_black()
         scheduler.playback_active = False
@@ -616,8 +614,9 @@ def publish_media(request: Request):
     if login_redirect := require_login(request, config):
         return login_redirect
     if scheduler.playback_active:
-        count = player.play_playlist(config["local_media_dir"], config)
-        scheduler.playback_active = count > 0
+        result = player.play_playlist(config["local_media_dir"], config)
+        scheduler.playback_active = result.started
+        count = result.media_count
     else:
         count = write_playlist(config["local_media_dir"], DATA_DIR / "playlist.m3u")
     return _media_manager_response(request, config, f"Playlist publiée avec {count} vidéo(s).")
