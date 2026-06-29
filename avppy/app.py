@@ -13,6 +13,13 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .cec import (
+    CEC_ADAPTERS,
+    CEC_BRANDS,
+    cec_controller,
+    normalize_cec_adapter,
+    normalize_cec_brand,
+)
 from .config import (
     DATA_DIR,
     LOG_DIR,
@@ -186,6 +193,67 @@ def settings(request: Request):
     return templates.TemplateResponse("settings.html", {"request": request, "config": config})
 
 
+def display_settings_context(
+    request: Request,
+    config: dict,
+    message: str = "",
+    message_ok: bool = True,
+    details: str = "",
+) -> dict:
+    return {
+        "request": request,
+        "config": config,
+        "message": message,
+        "message_ok": message_ok,
+        "details": details,
+        "cec_adapters": CEC_ADAPTERS,
+        "cec_brands": CEC_BRANDS,
+        "cec_status": cec_controller.status(config.get("cec_adapter")),
+    }
+
+
+@app.get("/settings/display", response_class=HTMLResponse)
+def display_settings_page(request: Request):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    return templates.TemplateResponse(
+        "display.html",
+        display_settings_context(request, config),
+    )
+
+
+@app.post("/settings/display", response_class=HTMLResponse)
+async def save_display_settings(request: Request):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+
+    form = await request.form()
+    config = update_config(
+        {
+            "cec_brand": normalize_cec_brand(form.get("cec_brand")),
+            "cec_adapter": normalize_cec_adapter(form.get("cec_adapter")),
+        }
+    )
+    action = str(form.get("action", "save"))
+    if action == "power_on":
+        result = cec_controller.power_on(config["cec_adapter"])
+    elif action == "standby":
+        result = cec_controller.standby(config["cec_adapter"])
+    else:
+        return templates.TemplateResponse(
+            "display.html",
+            display_settings_context(request, config, "Réglages de l'écran sauvegardés."),
+        )
+
+    LOGGER.info("Manual CEC action=%s ok=%s message=%s", action, result.ok, result.message)
+    return templates.TemplateResponse(
+        "display.html",
+        display_settings_context(request, config, result.message, result.ok, result.details),
+    )
+
+
 @app.get("/setup/wifi", response_class=HTMLResponse)
 def setup_wifi_page(request: Request, message: str = ""):
     config = load_config()
@@ -251,6 +319,7 @@ async def save_schedule(request: Request):
             "sync_time": str(form.get("sync_time", "03:00")),
             "reboot_enabled": "reboot_enabled" in form,
             "reboot_time": str(form.get("reboot_time", "06:00")),
+            "cec_schedule_enabled": "cec_schedule_enabled" in form,
         }
     )
     return redirect("/settings/schedule")

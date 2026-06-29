@@ -12,6 +12,7 @@ Les horaires définissent :
 
 - les jours où la lecture est autorisée ;
 - la plage horaire de lecture ;
+- l'allumage et la mise en veille HDMI-CEC du téléviseur ;
 - l'heure de synchronisation des médias ;
 - l'heure du redémarrage quotidien.
 
@@ -45,7 +46,28 @@ Dans cet exemple, AVP-Py diffuse les vidéos entre 08:00 et 20:00, uniquement le
 
 En dehors de cette plage, la lecture automatique s'arrête.
 
-## 3. Définir l'heure de synchronisation
+## 3. Piloter automatiquement le téléviseur
+
+La case suivante relie le contrôle HDMI-CEC aux horaires :
+
+```text
+Allumer et mettre en veille l'écran automatiquement selon ces horaires
+```
+
+Lorsqu'elle est cochée, AVP-Py tente :
+
+- d'allumer le téléviseur et de sélectionner l'entrée HDMI du Raspberry Pi au début de la plage ;
+- de mettre le téléviseur en veille à la fin de la plage.
+
+Configure et teste d'abord le téléviseur dans :
+
+```text
+Paramètres > Réglages écran
+```
+
+Voir [Réglages de l'écran](ECRAN.md).
+
+## 4. Définir l'heure de synchronisation
 
 Le champ `Synchro médias` définit l'heure de synchronisation rclone.
 
@@ -63,7 +85,7 @@ Synchronisation rclone
 
 Si AVP-Py est en mode local, l'heure reste enregistrée mais la synchronisation rclone est ignorée.
 
-## 4. Configurer le redémarrage quotidien
+## 5. Configurer le redémarrage quotidien
 
 Le champ `Redémarrage` définit l'heure du redémarrage automatique.
 
@@ -77,7 +99,7 @@ Redémarrage : 06:00
 
 Un redémarrage quotidien peut aider à garder une installation Raspberry Pi stable dans le temps.
 
-## 5. Sauvegarder
+## 6. Sauvegarder
 
 Après modification :
 
@@ -95,6 +117,7 @@ Si la lecture ne démarre pas au moment prévu :
 - vérifie l'heure interne du Raspberry Pi sur la page d'accueil ;
 - vérifie `Début lecture` et `Fin lecture` ;
 - vérifie qu'au moins une vidéo est disponible ;
+- vérifie les tests HDMI-CEC dans `Paramètres > Réglages écran` si l'écran ne réagit pas ;
 - vérifie que le service AVP-Py fonctionne.
 
 Commande utile en SSH :
@@ -106,5 +129,6 @@ sudo systemctl status avp-py.service
 ## Guides liés
 
 - [Premiers pas](PREMIERS_PAS.md)
+- [Réglages de l'écran](ECRAN.md)
 - [Configuration rclone](RCLONE.md)
 - [Utilisation en mode local](MODE_LOCAL.md)

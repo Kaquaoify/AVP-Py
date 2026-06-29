@@ -64,6 +64,20 @@ Synchroniser maintenant
 
 ---
 
+## Pourquoi les boutons d'allumage et de veille ne fonctionnent-ils pas ?
+
+Vérifie d'abord que HDMI-CEC est activé dans les réglages du téléviseur. Selon la marque, cette fonction peut s'appeler `Anynet+`, `SIMPLINK`, `BRAVIA Sync`, `VIERA Link` ou `EasyLink`.
+
+Dans `Paramètres > Réglages écran`, vérifie ensuite :
+
+1. que `cec-ctl` est disponible ;
+2. que l'adaptateur sélectionné est détecté ;
+3. que le bon port HDMI est sélectionné.
+
+Le Raspberry Pi doit idéalement être relié directement au téléviseur. Consulte [Réglages de l'écran](ECRAN.md) pour le diagnostic complet.
+
+---
+
 ## Le Raspberry Pi arrive chez un client sans Wi-Fi connu, comment le connecter ?
 
 Si aucun réseau connu n'est disponible au démarrage, AVP-Py démarre un hotspot de configuration.

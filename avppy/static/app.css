@@ -479,6 +479,44 @@ textarea,
 }
 
 .console.compact {
+  min-height: 0;
+  max-height: 260px;
+  margin-top: 12px;
+}
+
+.status-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+}
+
+.status-card h2 {
+  margin-top: 0;
+}
+
+.status-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.status-list div {
+  display: grid;
+  gap: 4px;
+}
+
+.status-list dt {
+  color: var(--muted);
+}
+
+.status-list dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.console.compact {
   min-height: 68px;
   max-height: 220px;
 }

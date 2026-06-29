@@ -20,6 +20,9 @@ AVP-Py est une application d'affichage vidéo pour Raspberry Pi. Elle se pilote 
 - [Configuration des horaires](HORAIRES.md)
   Jours actifs, heures de lecture, synchronisation médias et redémarrage quotidien.
 
+- [Réglages de l'écran](ECRAN.md)
+  Contrôle HDMI-CEC, tests d'allumage et de veille, choix du port HDMI et automatisation horaire.
+
 - [Configuration rclone](RCLONE.md)
   Connexion à Google Drive ou à un autre stockage distant avec rclone.
 

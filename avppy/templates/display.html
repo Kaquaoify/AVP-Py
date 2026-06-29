@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Réglages écran{% endblock %}
+{% block content %}
+<form method="post" action="/settings/display" class="panel stack">
+  <h1>Réglages écran</h1>
+
+  <p class="notice warning">
+    Le téléviseur ou l'écran doit être compatible HDMI-CEC et cette fonction doit être activée dans ses réglages.
+    Selon la marque, elle peut porter un nom différent, par exemple Anynet+, SIMPLINK, BRAVIA Sync ou EasyLink.
+  </p>
+
+  <div class="form-grid">
+    <label>
+      Marque du téléviseur
+      <select name="cec_brand">
+        {% for value, label in cec_brands %}
+          <option value="{{ value }}" {% if config.cec_brand == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      Port HDMI du Raspberry Pi
+      <select name="cec_adapter">
+        {% for value, label in cec_adapters %}
+          <option value="{{ value }}" {% if config.cec_adapter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <p class="muted">
+    Les commandes d'alimentation sont standardisées par HDMI-CEC. La marque sert à identifier le nom du réglage CEC
+    et permettra d'ajouter des adaptations si un modèle particulier en nécessite.
+  </p>
+
+  <section class="status-card">
+    <h2>État du contrôle CEC</h2>
+    <dl class="status-list">
+      <div>
+        <dt>Outil cec-ctl</dt>
+        <dd>{{ "Disponible" if cec_status.tool_available else "Non disponible" }}</dd>
+      </div>
+      <div>
+        <dt>Adaptateur sélectionné</dt>
+        <dd>{{ cec_status.adapter }}</dd>
+      </div>
+      <div>
+        <dt>Adaptateur détecté</dt>
+        <dd>{{ "Oui" if cec_status.adapter_available else "Non" }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  {% if message %}
+    <p class="notice {% if not message_ok %}warning{% endif %}">{{ message }}</p>
+  {% endif %}
+  {% if details %}
+    <details>
+      <summary>Détails techniques</summary>
+      <pre class="console compact">{{ details }}</pre>
+    </details>
+  {% endif %}
+
+  <div class="button-row">
+    <button type="submit" name="action" value="save">Sauvegarder</button>
+    <button type="submit" name="action" value="power_on">Allumer et sélectionner l'entrée HDMI</button>
+    <button class="secondary" type="submit" name="action" value="standby">Mettre en veille</button>
+    <a class="button secondary" href="/settings">Retour</a>
+  </div>
+</form>
+{% endblock %}

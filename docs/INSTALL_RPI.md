@@ -8,6 +8,7 @@ Ce guide décrit l'installation d'AVP-Py sur un Raspberry Pi.
 - Raspberry Pi OS Lite 64-bit ;
 - accès Internet pendant l'installation ;
 - accès SSH ou clavier branché au Raspberry Pi ;
+- câble HDMI direct entre le Raspberry Pi et le téléviseur pour le contrôle CEC ;
 - dépôt GitHub AVP-Py accessible.
 
 ## 1. Installer Raspberry Pi OS
@@ -131,7 +132,19 @@ Configure :
 
 Voir [Configuration des horaires](HORAIRES.md).
 
-## 8. Installation chez un client sans réseau connu
+## 8. Configurer le contrôle de l'écran
+
+Dans :
+
+```text
+Paramètres > Réglages écran
+```
+
+Choisis le port HDMI utilisé, puis teste l'allumage et la mise en veille. La fonction HDMI-CEC doit aussi être activée dans les réglages du téléviseur.
+
+Voir [Réglages de l'écran](ECRAN.md).
+
+## 9. Installation chez un client sans réseau connu
 
 Si le Raspberry Pi démarre sans Ethernet et sans Wi-Fi connu, AVP-Py crée automatiquement un hotspot de configuration :
 
@@ -155,7 +168,7 @@ Choisis le Wi-Fi client, entre le mot de passe et valide.
 
 Voir [Installation avec nouveau réseau Internet](NOUVEAU_RESEAU.md).
 
-## 9. Vérifier le service
+## 10. Vérifier le service
 
 Après installation :
 

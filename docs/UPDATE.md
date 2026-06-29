@@ -19,10 +19,11 @@ Le script utilise lui-même les droits administrateur quand c'est nécessaire, m
 Le script [`scripts/update.sh`](../scripts/update.sh) :
 
 1. récupère la dernière version avec `git pull --ff-only` ;
-2. met à jour les paquets système nécessaires ;
-3. met à jour les dépendances Python ;
-4. réinstalle la définition du service systemd ;
-5. redémarre AVP-Py.
+2. relance la version actualisée du script ;
+3. met à jour les paquets système nécessaires ;
+4. met à jour les dépendances Python ;
+5. réinstalle la définition du service systemd ;
+6. redémarre AVP-Py.
 
 ## Vérifier le service
 

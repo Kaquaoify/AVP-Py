@@ -47,7 +47,7 @@ install_argon40() {
 echo "Installing AVP-Py for user ${RUN_USER}"
 
 ${SUDO} apt-get update
-${SUDO} apt-get install -y curl git python3 python3-venv python3-pip rclone ffmpeg mpv avahi-daemon network-manager
+${SUDO} apt-get install -y curl git python3 python3-venv python3-pip rclone ffmpeg mpv avahi-daemon network-manager v4l-utils
 install_argon40
 ${SUDO} systemctl enable NetworkManager.service
 ${SUDO} systemctl start NetworkManager.service

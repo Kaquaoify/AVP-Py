@@ -12,9 +12,14 @@ else
   SUDO=""
 fi
 
-git -C "${INSTALL_DIR}" pull --ff-only
+if [[ "${AVP_UPDATE_REEXEC:-0}" != "1" ]]; then
+  git -C "${INSTALL_DIR}" pull --ff-only
+  export AVP_UPDATE_REEXEC=1
+  exec bash "${INSTALL_DIR}/scripts/update.sh"
+fi
+
 ${SUDO} apt-get update
-${SUDO} apt-get install -y network-manager
+${SUDO} apt-get install -y network-manager v4l-utils
 ${SUDO} systemctl enable NetworkManager.service
 ${SUDO} systemctl start NetworkManager.service
 {

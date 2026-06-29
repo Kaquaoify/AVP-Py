@@ -20,6 +20,8 @@
     <p class="notice">La gestion locale est active : l'heure de synchronisation rclone est conservée mais mise en pause.</p>
   {% endif %}
   <label class="checkline"><input name="reboot_enabled" type="checkbox" {% if config.reboot_enabled %}checked{% endif %}> Redémarrage quotidien activé</label>
+  <label class="checkline"><input name="cec_schedule_enabled" type="checkbox" {% if config.cec_schedule_enabled %}checked{% endif %}> Allumer et mettre en veille l'écran automatiquement selon ces horaires</label>
+  <p class="muted">Cette option utilise les paramètres HDMI-CEC définis dans <a href="/settings/display">Réglages écran</a>.</p>
   <div class="button-row">
     <button type="submit">Sauvegarder</button>
     <a class="button secondary" href="/settings">Retour</a>
