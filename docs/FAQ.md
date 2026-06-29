@@ -84,6 +84,8 @@ Après un branchement HDMI tardif, le connecteur vidéo peut être disponible av
 
 Après avoir branché l'écran, attends quelques secondes. La lecture doit démarrer sans appuyer sur `Play`.
 
+Lorsque la lecture est mise en pause ou que la plage horaire se termine, AVP-Py charge une image noire interne dans `mpv`. Cela maintient la sortie HDMI active et évite le retour de la console.
+
 Si la console reste affichée, vérifie :
 
 ```bash

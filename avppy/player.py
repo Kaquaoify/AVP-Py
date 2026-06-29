@@ -14,6 +14,7 @@ from .config import DATA_DIR
 from .media import write_playlist
 
 LOGGER = logging.getLogger(__name__)
+BLACK_FRAME_CONTENT = b"P6\n1 1\n255\n\x00\x00\x00"
 
 
 @dataclass(frozen=True)
@@ -27,16 +28,20 @@ class PlayerController:
         self.process: subprocess.Popen[str] | None = None
         self.ipc_path = DATA_DIR / "mpv.sock"
         self.playlist_path = DATA_DIR / "playlist.m3u"
+        self.black_frame_path = DATA_DIR / "avp-black.ppm"
         self.playlist_loaded = False
 
     def status(self) -> dict[str, Any]:
         running = self.is_running()
         current_path = self.get_property("path") if running else None
+        current_media = Path(str(current_path)).name if current_path else ""
+        if current_media == self.black_frame_path.name:
+            current_media = ""
         return {
             "running": running,
             "playlist_loaded": self.is_playlist_active(),
             "ipc": str(self.ipc_path),
-            "current_media": Path(str(current_path)).name if current_path else "",
+            "current_media": current_media,
         }
 
     def is_running(self) -> bool:
@@ -62,11 +67,12 @@ class PlayerController:
         args = [
             "mpv",
             "--idle=yes",
-            "--force-window=yes",
+            "--force-window=immediate",
             "--fs",
             "--no-terminal",
             "--really-quiet",
             "--audio-fallback-to-null=yes",
+            "--image-display-duration=inf",
             "--osc=no",
             "--osd-level=0",
             "--cursor-autohide=always",
@@ -94,7 +100,8 @@ class PlayerController:
     def play_playlist(self, media_dir: str | Path, config: dict[str, Any]) -> PlaybackResult:
         count = write_playlist(media_dir, self.playlist_path)
         if count == 0:
-            self.stop_to_black()
+            if self.ensure_idle(config):
+                self.stop_to_black()
             return PlaybackResult(0, False)
         if not self.ensure_idle(config):
             LOGGER.warning(
@@ -119,7 +126,11 @@ class PlayerController:
 
     def stop_to_black(self) -> None:
         self.playlist_loaded = False
-        self.command(["stop"])
+        self._ensure_black_frame()
+        if not self.command(["loadfile", str(self.black_frame_path), "replace"]):
+            self.command(["stop"])
+            return
+        self.command(["set_property", "pause", False])
 
     def pause_to_black(self) -> None:
         self.stop_to_black()
@@ -189,6 +200,12 @@ class PlayerController:
             time.sleep(0.1)
         LOGGER.warning("mpv IPC socket did not appear: %s", self.ipc_path)
         return False
+
+    def _ensure_black_frame(self) -> None:
+        if self.black_frame_path.exists():
+            return
+        self.black_frame_path.parent.mkdir(parents=True, exist_ok=True)
+        self.black_frame_path.write_bytes(BLACK_FRAME_CONTENT)
 
 
 player = PlayerController()
