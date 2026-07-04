@@ -29,6 +29,9 @@ AVP-Py est une application d'affichage vidéo pour Raspberry Pi. Elle se pilote 
 - [Utilisation en mode local](MODE_LOCAL.md)
   Envoi, suppression, renommage et ordre de lecture des vidéos depuis l'interface web.
 
+- [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md)
+  Réduction automatique des vidéos dépassant 2560×1440, file d'attente et fonctionnement avec rclone.
+
 ## Réseau et administration
 
 - [Installation avec nouveau réseau Internet](NOUVEAU_RESEAU.md)

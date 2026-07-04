@@ -64,6 +64,22 @@ Synchroniser maintenant
 
 ---
 
+## Pourquoi une vidéo importée est-elle en attente de réencodage ?
+
+Les vidéos dépassant `2560×1440` sont réduites pour améliorer la fluidité de lecture.
+
+Le traitement attend qu'aucune vidéo ne soit en cours de lecture. Une conversion 4K peut prendre longtemps sur le Raspberry Pi.
+
+Consulte l'état dans `Configuration des dossiers` ou `Gestion des médias`, puis vérifie les erreurs avec :
+
+```bash
+sudo tail -n 100 /var/lib/avp-py/logs/media-optimizer.log
+```
+
+Voir [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md).
+
+---
+
 ## Pourquoi les boutons d'allumage et de veille ne fonctionnent-ils pas ?
 
 Vérifie d'abord que HDMI-CEC est activé dans les réglages du téléviseur. Selon la marque, cette fonction peut s'appeler `Anynet+`, `SIMPLINK`, `BRAVIA Sync`, `VIERA Link` ou `EasyLink`.

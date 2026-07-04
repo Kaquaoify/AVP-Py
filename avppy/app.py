@@ -44,6 +44,7 @@ from .media import (
     scan_media,
     write_playlist,
 )
+from .media_optimizer import MAX_HEIGHT, MAX_WIDTH, media_optimizer
 from .network import connect_wifi, network, scan_wifi, set_device_hostname, slugify
 from .player import player
 from .scheduler import scheduler
@@ -63,6 +64,7 @@ app.mount("/static", StaticFiles(directory=str(PACKAGE_DIR / "static")), name="s
 @app.on_event("startup")
 def startup() -> None:
     network.start()
+    media_optimizer.start()
     scheduler.start()
     LOGGER.info("AVP-Py started")
 
@@ -168,6 +170,7 @@ def home(request: Request):
             "media": media,
             "player_status": player.status(),
             "clock": clock_status(),
+            "optimization_notice": media_optimizer.notice(config["local_media_dir"]),
         },
     )
 
@@ -351,7 +354,12 @@ def folders_page(request: Request, message: str = ""):
         return login_redirect
     return templates.TemplateResponse(
         "folders.html",
-        {"request": request, "config": config, "message": message},
+        {
+            "request": request,
+            "config": config,
+            "message": message,
+            "optimizer_status": media_optimizer.status(),
+        },
     )
 
 
@@ -450,9 +458,16 @@ async def save_folders(request: Request):
         else:
             ok, output = sync_now(config)
             message = ("Synchronisation terminée\n" if ok else "Synchronisation échouée\n") + output
+    elif action == "reencode":
+        message = media_optimizer.request(config.get("media_source", "rclone"))
     return templates.TemplateResponse(
         "folders.html",
-        {"request": request, "config": config, "message": message},
+        {
+            "request": request,
+            "config": config,
+            "message": message,
+            "optimizer_status": media_optimizer.status(),
+        },
     )
 
 
@@ -479,6 +494,8 @@ def _media_manager_response(request: Request, config: dict, message: str = ""):
             "disk_free": _format_bytes(disk.free),
             "disk_total": _format_bytes(disk.total),
             "extensions": ", ".join(sorted(VIDEO_EXTENSIONS)),
+            "optimizer_status": media_optimizer.status(),
+            "max_resolution": f"{MAX_WIDTH}×{MAX_HEIGHT}",
         },
     )
 
@@ -520,6 +537,7 @@ async def upload_media(request: Request, files: list[UploadFile] = File(...)):
     upload_dir = media_root.parent / ".avppy-uploads"
     upload_dir.mkdir(parents=True, exist_ok=True)
     messages: list[str] = []
+    optimization_needed = False
 
     for upload in files:
         filename = _safe_media_name(upload.filename or "")
@@ -537,7 +555,8 @@ async def upload_media(request: Request, files: list[UploadFile] = File(...)):
                 while chunk := await upload.read(1024 * 1024):
                     output.write(chunk)
 
-            if not probe_media(temporary):
+            metadata = probe_media(temporary)
+            if not metadata:
                 messages.append(f"Fichier refusé : {filename} n'est pas une vidéo lisible.")
                 continue
 
@@ -545,6 +564,15 @@ async def upload_media(request: Request, files: list[UploadFile] = File(...)):
             temporary.replace(destination)
             generate_thumbnail(destination, force=True)
             messages.append(f"Vidéo ajoutée : {destination.name}")
+            if (
+                int(metadata.get("width") or 0) > MAX_WIDTH
+                or int(metadata.get("height") or 0) > MAX_HEIGHT
+            ):
+                optimization_needed = True
+                messages.append(
+                    f"{destination.name} dépasse {MAX_WIDTH}×{MAX_HEIGHT} : "
+                    "sa résolution sera réduite dès que la lecture sera inactive."
+                )
         except OSError as exc:
             LOGGER.exception("Media upload failed for %s", filename)
             messages.append(f"Échec de l'envoi de {filename} : {exc}")
@@ -554,7 +582,18 @@ async def upload_media(request: Request, files: list[UploadFile] = File(...)):
                 temporary.unlink()
 
     save_media_order(media_root, ordered_media_files(media_root))
+    if optimization_needed:
+        messages.append(media_optimizer.request("manual"))
     return _media_manager_response(request, config, "\n".join(messages))
+
+
+@app.post("/settings/media/reencode", response_class=HTMLResponse)
+def reencode_media(request: Request):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    message = media_optimizer.request(config.get("media_source", "manual"))
+    return _media_manager_response(request, config, message)
 
 
 @app.post("/settings/media/delete", response_class=HTMLResponse)
@@ -572,6 +611,7 @@ def delete_media(request: Request, relative_path: str = Form(...)):
         if not is_video(target):
             raise ValueError("Le fichier vidéo est introuvable.")
         remove_thumbnail(target)
+        media_optimizer.remove_notice(target)
         target.unlink()
         save_media_order(media_root, ordered_media_files(media_root))
         message = f"Vidéo supprimée : {target.name}"
@@ -604,6 +644,7 @@ def rename_media(request: Request, relative_path: str = Form(...), new_name: str
         files = ordered_media_files(media_root)
         remove_thumbnail(target)
         target.rename(destination)
+        media_optimizer.rename_notice(media_root, target, destination)
         files = [destination if path == target else path for path in files]
         save_media_order(media_root, files)
         generate_thumbnail(destination, force=True)
@@ -719,4 +760,12 @@ def thumbnail(request: Request, name: str):
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "player": player.status(), "network": network.status(), "clock": clock_status()}
+    config = load_config()
+    optimization = media_optimizer.notice(config["local_media_dir"])
+    return {
+        "ok": True,
+        "player": player.status(),
+        "network": network.status(),
+        "clock": clock_status(),
+        "optimization": {"count": optimization["count"]},
+    }

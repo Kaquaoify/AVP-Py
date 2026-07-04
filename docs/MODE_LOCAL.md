@@ -71,6 +71,10 @@ Formats vidéo acceptés :
 
 Si un fichier porte déjà le même nom, AVP-Py ajoute automatiquement un suffixe pour éviter d'écraser le fichier existant.
 
+Si une vidéo dépasse `2560×1440`, AVP-Py affiche un avertissement et place sa réduction de résolution dans la file d'attente. Le traitement démarre lorsque la lecture est inactive.
+
+Le bouton `Réencodage manuel` permet de vérifier à nouveau toute la bibliothèque. Voir [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md).
+
 ## 4. Renommer une vidéo
 
 Dans la liste des médias :
@@ -135,5 +139,6 @@ Attention : en mode rclone, le dossier distant redevient la source de référenc
 ## Guides liés
 
 - [Configuration rclone](RCLONE.md)
+- [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md)
 - [Configuration des horaires](HORAIRES.md)
 - [FAQ](FAQ.md)

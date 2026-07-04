@@ -19,6 +19,11 @@
   {% endif %}
 
   <form method="post" action="/settings/media/upload" enctype="multipart/form-data" class="upload-box stack">
+    <p class="notice warning">
+      Les vidéos dépassant {{ max_resolution }} seront automatiquement réduites à cette
+      résolution afin d'éviter les pertes de FPS. Le traitement commence lorsque la lecture
+      est inactive et peut prendre du temps.
+    </p>
     <label>Sélectionner une ou plusieurs vidéos
       <input name="files" type="file" accept="video/*" multiple required>
     </label>
@@ -30,8 +35,17 @@
     <form method="post" action="/settings/media/publish">
       <button type="submit" {% if config.media_source != "manual" %}disabled{% endif %}>Publier la playlist</button>
     </form>
+    <form method="post" action="/settings/media/reencode">
+      <button class="secondary" type="submit">Réencodage manuel</button>
+    </form>
     <a class="button secondary" href="/settings/folders">Choisir la source des médias</a>
   </div>
+
+  {% if optimizer_status.processing %}
+    <p class="notice">Réencodage en cours : {{ optimizer_status.current_file or "analyse des médias" }}.</p>
+  {% elif optimizer_status.pending_modes %}
+    <p class="notice">Réencodage en attente de l'arrêt de la lecture.</p>
+  {% endif %}
 
   {% if message %}<pre class="console compact">{{ message }}</pre>{% endif %}
 

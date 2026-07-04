@@ -52,6 +52,11 @@
       piClockSyncedAt = performance.now();
       piClockOffsetMinutes = status.clock.offset_minutes;
       document.getElementById('pi-timezone').textContent = `${status.clock.timezone} (${status.clock.utc_offset})`;
+      const optimizationAlert = document.getElementById('media-optimization-alert');
+      const optimizationCount = status.optimization?.count || 0;
+      optimizationAlert.hidden = optimizationCount === 0;
+      optimizationAlert.textContent =
+        `Résolution réduite sur ${optimizationCount} fichier(s) pour optimiser la lecture.`;
       renderPiClock();
     } catch (_) {
       // La dernière valeur connue reste affichée si le Pi est momentanément indisponible.
@@ -89,6 +94,10 @@
   <p class="empty">Aucun média local.</p>
   {% endfor %}
 </section>
+
+<aside id="media-optimization-alert" class="media-optimization-alert" aria-live="polite" {% if not optimization_notice.count %}hidden{% endif %}>
+  Résolution réduite sur {{ optimization_notice.count }} fichier(s) pour optimiser la lecture.
+</aside>
 
 <footer class="pi-clock-footer" aria-label="Horloge du Raspberry Pi">
   <span>Heure du Raspberry Pi</span>

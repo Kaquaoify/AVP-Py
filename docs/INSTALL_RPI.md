@@ -113,6 +113,7 @@ Voir aussi :
 
 - [Configuration rclone](RCLONE.md)
 - [Utilisation en mode local](MODE_LOCAL.md)
+- [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md)
 
 ## 7. Premier réglage des horaires
 

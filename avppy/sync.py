@@ -3,12 +3,19 @@ from __future__ import annotations
 import logging
 import os
 import subprocess
+import threading
 from pathlib import Path
 
-from .config import LOG_DIR, write_rclone_config_if_needed
-from .media import scan_media
+from .config import (
+    LOG_DIR,
+    RCLONE_SOURCE_DIR,
+    RCLONE_SOURCE_READY_FILE,
+    write_rclone_config_if_needed,
+)
+from .media_optimizer import bootstrap_rclone_source, media_optimizer
 
 LOGGER = logging.getLogger(__name__)
+SYNC_LOCK = threading.Lock()
 
 
 def remote_target(config: dict) -> str:
@@ -32,23 +39,37 @@ def test_connection(config: dict) -> tuple[bool, str]:
 
 
 def sync_now(config: dict, regenerate_thumbnails: bool = True) -> tuple[bool, str]:
-    target = remote_target(config)
-    local_dir = Path(config["local_media_dir"])
-    local_dir.mkdir(parents=True, exist_ok=True)
-    command = [
-        "rclone",
-        "sync",
-        target,
-        str(local_dir),
-        "--create-empty-src-dirs",
-        "--log-file",
-        str(LOG_DIR / "rclone.log"),
-        "--log-level",
-        "INFO",
-    ]
-    ok, output = _run_rclone(command, config, timeout=3600)
+    del regenerate_thumbnails
+    if not SYNC_LOCK.acquire(blocking=False):
+        return False, "Une synchronisation rclone est déjà en cours."
+
+    media_optimizer.set_sync_active(True)
+    try:
+        target = remote_target(config)
+        playback_dir = Path(config["local_media_dir"])
+        source_dir = RCLONE_SOURCE_DIR
+        source_dir.mkdir(parents=True, exist_ok=True)
+        bootstrap_rclone_source(playback_dir)
+        command = [
+            "rclone",
+            "sync",
+            target,
+            str(source_dir),
+            "--create-empty-src-dirs",
+            "--checksum",
+            "--log-file",
+            str(LOG_DIR / "rclone.log"),
+            "--log-level",
+            "INFO",
+        ]
+        ok, output = _run_rclone(command, config, timeout=3600)
+    finally:
+        media_optimizer.set_sync_active(False)
+        SYNC_LOCK.release()
     if ok:
-        scan_media(local_dir, regenerate_thumbnails=regenerate_thumbnails)
+        RCLONE_SOURCE_READY_FILE.write_text("ready\n", encoding="utf-8")
+        queued = media_optimizer.request("rclone")
+        output = f"{output}\n{queued}".strip()
     return ok, output
 
 
@@ -78,4 +99,3 @@ def _run_rclone(command: list[str], config: dict, timeout: int = 120) -> tuple[b
 
     LOGGER.error("rclone command failed: %s", output)
     return False, output or f"Erreur rclone code {result.returncode}"
-

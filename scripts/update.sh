@@ -19,7 +19,7 @@ if [[ "${AVP_UPDATE_REEXEC:-0}" != "1" ]]; then
 fi
 
 ${SUDO} apt-get update
-${SUDO} apt-get install -y network-manager v4l-utils
+${SUDO} apt-get install -y ffmpeg network-manager v4l-utils
 ${SUDO} systemctl enable NetworkManager.service
 ${SUDO} systemctl start NetworkManager.service
 {

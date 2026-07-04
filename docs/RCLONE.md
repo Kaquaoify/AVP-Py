@@ -123,7 +123,9 @@ Clique sur :
 Synchroniser maintenant
 ```
 
-AVP-Py copie les fichiers du dossier distant vers le dossier local, puis régénère les miniatures et les métadonnées.
+AVP-Py copie les fichiers du dossier distant dans son miroir source. Lorsque rclone a terminé les téléchargements et les suppressions, AVP-Py vérifie la résolution de tous les médias et met à jour la bibliothèque de lecture.
+
+Les vidéos dépassant `2560×1440` sont placées dans la file de réencodage. Voir [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md).
 
 ## 7. Synchronisation automatique
 
@@ -140,6 +142,8 @@ Synchro médias
 ```
 
 Cette synchronisation est ignorée si AVP-Py est en mode local.
+
+La vérification et le réencodage des médias sont déclenchés après chaque synchronisation automatique réussie.
 
 ## 8. Passer temporairement en mode local
 
@@ -159,5 +163,6 @@ Attention : au prochain `rclone sync`, le dossier distant redevient la source de
 ## Guides liés
 
 - [Utilisation en mode local](MODE_LOCAL.md)
+- [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md)
 - [Configuration des horaires](HORAIRES.md)
 - [FAQ](FAQ.md)

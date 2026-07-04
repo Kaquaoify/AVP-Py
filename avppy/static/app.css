@@ -193,6 +193,24 @@ button:disabled {
   font-weight: 700;
 }
 
+.media-optimization-alert {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 20;
+  max-width: min(520px, calc(100vw - 36px));
+  padding: 11px 14px;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  background: #5b2327;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 25%);
+}
+
+.media-optimization-alert[hidden] {
+  display: none;
+}
+
 .media-row {
   display: grid;
   grid-template-columns: 44px 180px 1fr;
@@ -621,6 +639,13 @@ th {
   .pi-clock-footer {
     right: 10px;
     bottom: 10px;
+  }
+
+  .media-optimization-alert {
+    left: 10px;
+    right: 10px;
+    bottom: 96px;
+    max-width: none;
   }
 
   .media-row {

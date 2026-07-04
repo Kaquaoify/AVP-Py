@@ -48,9 +48,15 @@
     <button name="action" value="save" type="submit">Sauvegarder</button>
     <button class="rclone-action" name="action" value="test" type="submit">Tester la connexion</button>
     <button class="rclone-action" name="action" value="sync" type="submit">Synchroniser maintenant</button>
+    <button class="secondary" name="action" value="reencode" type="submit">Réencodage manuel</button>
     <a id="manual-manager-link" class="button" href="/settings/media">Gérer les médias</a>
     <a class="button secondary" href="/settings">Retour</a>
   </div>
+  {% if optimizer_status.processing %}
+    <p class="notice">Réencodage en cours : {{ optimizer_status.current_file or "analyse des médias" }}.</p>
+  {% elif optimizer_status.pending_modes %}
+    <p class="notice">Réencodage en attente de l'arrêt de la lecture.</p>
+  {% endif %}
   {% if message %}
     <pre class="console">{{ message }}</pre>
   {% endif %}

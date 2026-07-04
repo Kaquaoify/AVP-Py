@@ -16,6 +16,8 @@ THUMB_DIR = DATA_DIR / "thumbnails"
 LOG_DIR = DATA_DIR / "logs"
 RCLONE_CONFIG_FILE = DATA_DIR / "rclone.conf"
 RCLONE_CONFIG_SOURCE_HASH_FILE = DATA_DIR / "rclone-config-source.sha256"
+RCLONE_SOURCE_DIR = DATA_DIR / "rclone-source"
+RCLONE_SOURCE_READY_FILE = DATA_DIR / "rclone-source.ready"
 
 
 def ensure_directories() -> None:

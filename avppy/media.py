@@ -38,7 +38,17 @@ def probe_media(path: Path) -> dict[str, Any]:
         return {}
 
     streams = payload.get("streams", [])
-    video_stream = next((stream for stream in streams if stream.get("codec_type") == "video"), {})
+    video_stream = next(
+        (
+            stream
+            for stream in streams
+            if stream.get("codec_type") == "video"
+            and not stream.get("disposition", {}).get("attached_pic")
+        ),
+        {},
+    )
+    if not video_stream:
+        return {}
     fmt = payload.get("format", {})
     width = video_stream.get("width")
     height = video_stream.get("height")
@@ -47,6 +57,16 @@ def probe_media(path: Path) -> dict[str, Any]:
     return {
         "duration": round(duration, 1),
         "codec": video_stream.get("codec_name", ""),
+        "audio_codec": next(
+            (
+                stream.get("codec_name", "")
+                for stream in streams
+                if stream.get("codec_type") == "audio"
+            ),
+            "",
+        ),
+        "width": int(width or 0),
+        "height": int(height or 0),
         "format": fmt.get("format_long_name") or fmt.get("format_name", ""),
         "resolution": f"{width}x{height}" if width and height else "",
         "container": path.suffix.lower().lstrip("."),
