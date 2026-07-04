@@ -49,6 +49,8 @@ Dans la barre du chemin de l'explorateur, écris :
 ```cmd
 cmd
 ```
+![Barre de chemin de l'explorateur](/docs/img/chemin-explorateur.png)
+
 Dans le terminal qui vient de s'ouvrir, tape :
 ```bash
 rclone config
