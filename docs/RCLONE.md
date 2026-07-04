@@ -32,7 +32,7 @@ Synchronisation rclone
 
 Les champs à compléter sont :
 
-- `Dossier local sur le Raspberry Pi` : dossier où les vidéos seront stockées localement ;
+- `Dossier local sur le Raspberry Pi` : dossier où les vidéos seront stockées localement _(laisser par défaut sauf raisons spécifiques)_;
 - `Nom du remote rclone` : par exemple `gdrive` ;
 - `Chemin du dossier distant` : par exemple `Affichage/Hall entree` ;
 - `Contenu complet de rclone.conf` : bloc de configuration rclone complet, token inclus.
@@ -41,8 +41,15 @@ AVP-Py attend le contenu complet du bloc `rclone.conf`, pas uniquement le token.
 
 ## 3. Créer le remote rclone
 
-Sur un ordinateur avec navigateur, installe rclone puis lance :
+Sur un ordinateur avec navigateur, installe [rclone](https://rclone.org/downloads/). 
 
+Extrait le contenu de l'archive ZIP sur ton PC, à l'emplacement que tu veux puis va dans ce dossier extrait. 
+
+Dans la barre du chemin de l'explorateur, écris :
+```cmd
+cmd
+```
+Dans le terminal qui vient de s'ouvrir, tape :
 ```bash
 rclone config
 ```
@@ -51,19 +58,22 @@ Crée un nouveau remote :
 
 1. choisis `n` pour créer un nouveau remote ;
 2. nomme-le `gdrive` ;
-3. choisis le stockage `drive` pour Google Drive ;
+3. choisis le stockage `drive` pour Google Drive _(24 actuellement, toujours vérifier si les versions changent)_ ;
 4. laisse `client_id` et `client_secret` vides sauf besoin particulier ;
-5. choisis le niveau d'accès souhaité ;
-6. accepte l'authentification automatique ;
-7. connecte-toi au compte Google dans le navigateur ;
-8. termine l'assistant.
+5. choisis le niveau d'accès souhaité, choisir 1 dans notre cas ;
+6. laisser le compte de service vide ;
+7. ne pas activer la configuration avancée ;
+8. accepte l'authentification automatique ;
+9. connecte-toi au compte Google dans le navigateur ;
+10. Ne pas configurer comme drive partagé ;
+10. termine l'assistant avec Y puis Q.
 
-Affiche ensuite le chemin du fichier généré :
+Toujours dans le même terminal, affiche ensuite le chemin du fichier généré :
 
 ```bash
 rclone config file
 ```
-
+Copie le lien indiqué puis colle-le dans le champ du chemin de l'explorateur de fichier.
 Ouvre le fichier indiqué et copie tout le bloc du remote.
 
 Exemple de structure :
@@ -73,9 +83,8 @@ Exemple de structure :
 type = drive
 scope = drive
 token = {"access_token":"...","refresh_token":"..."}
+team_drive =
 ```
-
-Le vrai fichier contient des valeurs privées. Ne le publie jamais dans GitHub, dans des captures d'écran ou dans des logs.
 
 ## 4. Coller la configuration dans AVP-Py
 

@@ -4,6 +4,7 @@
 - Ajouter des langues pour l'interface
 - Refaire l'UI
 - Modifier le bouton Publier la playlist pour que ça soit plus clair
+- ajouter un bouton reboot
 
 ## A TESTER
 
