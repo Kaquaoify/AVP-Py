@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
-import subprocess
 import threading
 import time
 from datetime import datetime
@@ -11,6 +9,7 @@ from .cec import cec_controller, normalize_cec_adapter
 from .config import load_config
 from .player import player
 from .sync import sync_now
+from .system_control import system_controller
 
 LOGGER = logging.getLogger(__name__)
 
@@ -171,8 +170,9 @@ class Scheduler:
         if now.strftime("%H:%M") == reboot_time and self.last_reboot_key != key:
             self.last_reboot_key = key
             LOGGER.info("Scheduled reboot requested")
-            if os.name != "nt":
-                subprocess.Popen(["sudo", "systemctl", "reboot"])
+            accepted, message = system_controller.request_reboot()
+            if not accepted:
+                LOGGER.error("Scheduled reboot failed: %s", message)
 
     @staticmethod
     def _is_playback_time(config: dict, now: datetime) -> bool:

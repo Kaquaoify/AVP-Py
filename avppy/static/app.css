@@ -138,6 +138,20 @@ button:disabled {
   border-color: var(--line);
 }
 
+.reboot-button {
+  border-color: var(--accent-2);
+  background: var(--accent-2);
+}
+
+.topbar form {
+  margin: 0;
+}
+
+.reboot-panel {
+  max-width: 680px;
+  margin: 40px auto;
+}
+
 .volume {
   display: flex;
   align-items: center;
@@ -583,14 +597,21 @@ th {
 
 @media (max-width: 720px) {
   .topbar {
+    flex-wrap: wrap;
     gap: 12px;
-    padding: 0 16px;
+    padding: 10px 16px;
   }
 
   .device {
+    flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .topbar button {
+    min-height: 38px;
+    padding: 0 12px;
   }
 
   .page {

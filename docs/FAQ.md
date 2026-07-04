@@ -98,6 +98,26 @@ Consulte aussi [Réglages de l'écran](ECRAN.md).
 
 ---
 
+## Pourquoi le bouton Redémarrer ne fonctionne-t-il pas ?
+
+Le bouton nécessite une session administrateur active et les droits `sudo` installés par AVP-Py.
+
+Vérifie en SSH :
+
+```bash
+sudo -n /usr/bin/systemctl reboot
+```
+
+Attention : cette commande redémarre immédiatement le Raspberry Pi si les droits sont corrects.
+
+Si elle demande un mot de passe ou renvoie une erreur, relance la mise à jour :
+
+```bash
+bash /opt/avp-py/app/scripts/update.sh
+```
+
+---
+
 ## Le Raspberry Pi arrive chez un client sans Wi-Fi connu, comment le connecter ?
 
 Si aucun réseau connu n'est disponible au démarrage, AVP-Py démarre un hotspot de configuration.

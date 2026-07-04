@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}AVP-Py - Redémarrage{% endblock %}
+{% block content %}
+<section class="panel stack reboot-panel">
+  <h1>{% if accepted %}Redémarrage en cours{% else %}Redémarrage impossible{% endif %}</h1>
+  <p class="notice {% if not accepted %}warning{% endif %}">{{ message }}</p>
+  {% if accepted %}
+    <p>La page se reconnectera automatiquement lorsque le Raspberry Pi sera de nouveau disponible.</p>
+    <p id="reboot-status" class="muted">Arrêt du service en attente…</p>
+  {% else %}
+    <a class="button secondary" href="/">Retour à l'accueil</a>
+  {% endif %}
+</section>
+
+{% if accepted %}
+<script>
+  let rebootWentOffline = false;
+
+  async function waitForReboot() {
+    try {
+      const response = await fetch('/health', { cache: 'no-store' });
+      if (rebootWentOffline && response.ok) {
+        window.location.replace('/');
+      }
+    } catch (_) {
+      rebootWentOffline = true;
+      document.getElementById('reboot-status').textContent =
+        'Raspberry Pi arrêté. Redémarrage en cours…';
+    }
+  }
+
+  setInterval(waitForReboot, 2000);
+</script>
+{% endif %}
+{% endblock %}

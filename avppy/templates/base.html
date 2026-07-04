@@ -10,6 +10,9 @@
     <header class="topbar">
       <a class="brand" href="/">AVP-Py</a>
       <span class="device">{{ config.device_name }}</span>
+      <form method="post" action="/system/reboot" onsubmit="return confirm('Redémarrer le Raspberry Pi maintenant ?');">
+        <button class="reboot-button" type="submit">Redémarrer</button>
+      </form>
       <form method="post" action="/logout">
         <button class="ghost" type="submit">Déconnexion</button>
       </form>
@@ -19,4 +22,3 @@
     </main>
   </body>
 </html>
-

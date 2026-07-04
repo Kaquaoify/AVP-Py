@@ -14,6 +14,8 @@ La page `Admin` permet de configurer :
 - l'adresse locale en `.local` ;
 - le mot de passe administrateur.
 
+Le bandeau supérieur de toutes les pages authentifiées permet également de redémarrer le Raspberry Pi.
+
 ## 1. Modifier le nom de l'appareil
 
 Le champ `Nom de l'appareil` définit le nom visible dans AVP-Py.
@@ -100,6 +102,24 @@ Pour une installation client :
 - évite les espaces, accents et caractères spéciaux dans le nom ;
 - garde AVP-Py accessible uniquement sur le réseau local ;
 - ne publie jamais de configuration contenant un token rclone.
+
+## Redémarrer le Raspberry Pi
+
+Le bouton `Redémarrer` est disponible dans le bandeau supérieur, à côté de `Déconnexion`.
+
+Après confirmation :
+
+1. AVP-Py demande le redémarrage avec une commande système fixe ;
+2. le navigateur attend que le Raspberry Pi s'arrête ;
+3. la page d'accueil est rouverte automatiquement lorsque le service répond de nouveau.
+
+L'action exige une session administrateur AVP-Py active. Elle utilise :
+
+```bash
+sudo -n /usr/bin/systemctl reboot
+```
+
+Les scripts d'installation et de mise à jour ajoutent uniquement la commande `systemctl reboot` aux autorisations `sudo` sans mot de passe d'AVP-Py. Aucun argument fourni par le navigateur n'est transmis à la commande système.
 
 ## Exemples
 

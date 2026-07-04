@@ -48,6 +48,7 @@ from .network import connect_wifi, network, scan_wifi, set_device_hostname, slug
 from .player import player
 from .scheduler import scheduler
 from .sync import sync_now, test_connection
+from .system_control import system_controller
 
 configure_logging()
 LOGGER = logging.getLogger(__name__)
@@ -131,6 +132,26 @@ def logout():
     response = redirect("/login")
     response.delete_cookie("avppy_auth")
     return response
+
+
+@app.post("/system/reboot", response_class=HTMLResponse)
+def reboot_system(request: Request):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+
+    accepted, message = system_controller.request_reboot()
+    LOGGER.warning("Manual reboot request accepted=%s", accepted)
+    return templates.TemplateResponse(
+        "rebooting.html",
+        {
+            "request": request,
+            "config": config,
+            "accepted": accepted,
+            "message": message,
+        },
+        status_code=202 if accepted else 503,
+    )
 
 
 @app.get("/", response_class=HTMLResponse)
