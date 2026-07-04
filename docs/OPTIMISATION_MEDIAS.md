@@ -24,12 +24,15 @@ Le réencodage est effectué fichier par fichier avec une priorité système bas
 
 Le traitement :
 
-1. attend que la lecture vidéo soit inactive ;
-2. écrit le résultat dans un fichier temporaire ;
-3. remplace le fichier de lecture uniquement si FFmpeg termine correctement ;
-4. s'interrompt et se remet en attente si une lecture démarre.
+1. vérifie d'abord les médias sans interrompre la lecture ;
+2. suspend automatiquement la lecture uniquement lorsqu'un fichier doit réellement être modifié ;
+3. écrit le résultat dans un fichier temporaire ;
+4. remplace le fichier de lecture uniquement si FFmpeg termine correctement ;
+5. reprend la lecture si elle était active avant le traitement et si l'horaire de lecture est toujours actif.
 
 Une vidéo incomplète n'est donc jamais publiée dans la playlist.
+
+Si la lecture était déjà arrêtée ou en pause, AVP-Py ne la démarre pas après le traitement. Une pression manuelle sur `Pause` pendant le traitement empêche également la reprise automatique.
 
 Le traitement d'une longue vidéo 4K peut prendre beaucoup de temps sur un Raspberry Pi.
 
@@ -85,6 +88,8 @@ Paramètres > Gestion des médias
 ```
 
 Le bouton place la vérification dans la file d'attente. Il ne lance pas plusieurs conversions simultanément.
+
+L'état affiché sur les pages de réglages est actualisé automatiquement. Il indique la phase en cours, le nom de la vidéo réencodée et la fin du traitement.
 
 ## Bandeau sur la page d'accueil
 

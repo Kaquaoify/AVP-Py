@@ -183,8 +183,9 @@ async def control(request: Request):
     form = await request.form()
     action = str(form.get("action", ""))
     if action == "play":
-        result = player.play_playlist(config["local_media_dir"], config)
-        scheduler.resume_manually(result.started)
+        if not scheduler.maintenance_pause:
+            result = player.play_playlist(config["local_media_dir"], config)
+            scheduler.resume_manually(result.started)
     elif action == "pause":
         scheduler.pause_manually()
         player.pause_to_black()
@@ -571,7 +572,8 @@ async def upload_media(request: Request, files: list[UploadFile] = File(...)):
                 optimization_needed = True
                 messages.append(
                     f"{destination.name} dépasse {MAX_WIDTH}×{MAX_HEIGHT} : "
-                    "sa résolution sera réduite dès que la lecture sera inactive."
+                    "sa résolution sera réduite automatiquement. "
+                    "La lecture sera suspendue pendant le traitement si nécessaire."
                 )
         except OSError as exc:
             LOGGER.exception("Media upload failed for %s", filename)
@@ -762,10 +764,14 @@ def thumbnail(request: Request, name: str):
 def health() -> dict:
     config = load_config()
     optimization = media_optimizer.notice(config["local_media_dir"])
+    optimizer_status = media_optimizer.status()
     return {
         "ok": True,
         "player": player.status(),
         "network": network.status(),
         "clock": clock_status(),
-        "optimization": {"count": optimization["count"]},
+        "optimization": {
+            "count": optimization["count"],
+            **optimizer_status,
+        },
     }

@@ -28,7 +28,6 @@ from .media import (
     remove_thumbnail,
     save_media_order,
 )
-from .player import player
 
 
 LOGGER = logging.getLogger(__name__)
@@ -149,6 +148,9 @@ class MediaOptimizer:
         self.processing_mode = ""
         self.sync_active = False
         self.current_file = ""
+        self.phase = ""
+        self.maintenance_active = False
+        self.playback_paused = False
         self.last_message = ""
 
     def start(self) -> None:
@@ -167,9 +169,12 @@ class MediaOptimizer:
         with self._condition:
             self._pending_modes.add(normalized)
             self._condition.notify_all()
+        with self._state_lock:
+            if not self.processing:
+                self.last_message = "Traitement demandé."
         return (
             "Vérification et réencodage ajoutés à la file d'attente. "
-            "Le traitement démarrera lorsque la lecture sera inactive."
+            "La lecture sera suspendue automatiquement uniquement si un fichier doit être modifié."
         )
 
     def status(self) -> dict[str, Any]:
@@ -179,6 +184,10 @@ class MediaOptimizer:
             return {
                 "processing": self.processing,
                 "current_file": self.current_file,
+                "phase": self.phase,
+                "maintenance_active": self.maintenance_active,
+                "playback_paused": self.playback_paused,
+                "sync_active": self.sync_active,
                 "pending_modes": pending,
                 "last_message": self.last_message,
             }
@@ -252,6 +261,7 @@ class MediaOptimizer:
                 continue
 
             target = self._manual_target(source)
+            self._begin_mutation()
             converted, deferred = self._transcode(source, target, info)
             if deferred:
                 summary.deferred = True
@@ -338,6 +348,7 @@ class MediaOptimizer:
                 records[relative.as_posix()] = previous
                 continue
 
+            self._begin_mutation()
             if info.oversized:
                 converted, deferred = self._transcode(source, target, info)
                 if deferred:
@@ -350,7 +361,9 @@ class MediaOptimizer:
                     continue
                 summary.converted.append(target)
             else:
+                self._set_progress("Mise à jour de la bibliothèque", source.name)
                 if not self._materialize_source(source, target):
+                    self._set_progress("Vérification des médias", "")
                     summary.failed.append(f"{relative.as_posix()}: copie impossible")
                     continue
                 summary.copied += 1
@@ -362,14 +375,21 @@ class MediaOptimizer:
                 "optimized": info.oversized,
                 "source_codec": info.video_codec,
             }
+            self._set_progress("Vérification des médias", "")
 
         if not summary.deferred and self._should_pause():
             summary.deferred = True
 
         if not summary.deferred:
-            for path in ordered_media_files(playback_root):
-                if path.resolve() in expected_outputs:
-                    continue
+            stale_files = [
+                path
+                for path in ordered_media_files(playback_root)
+                if path.resolve() not in expected_outputs
+            ]
+            if stale_files:
+                self._begin_mutation()
+                self._set_progress("Mise à jour de la bibliothèque", "")
+            for path in stale_files:
                 remove_thumbnail(path)
                 path.unlink()
                 summary.deleted += 1
@@ -418,6 +438,9 @@ class MediaOptimizer:
                 self.processing = True
                 self.processing_mode = mode
                 self.current_file = ""
+                self.phase = "Vérification des médias"
+                self.maintenance_active = False
+                self.playback_paused = False
                 self.last_message = ""
             try:
                 summary = (
@@ -438,14 +461,14 @@ class MediaOptimizer:
                 with self._state_lock:
                     self.last_message = "Le traitement des médias a échoué. Consulte les logs."
             finally:
+                self._end_mutation()
                 with self._state_lock:
                     self.processing = False
                     self.processing_mode = ""
                     self.current_file = ""
+                    self.phase = ""
 
     def _should_pause(self) -> bool:
-        if player.is_playlist_active():
-            return True
         with self._state_lock:
             mode = self.processing_mode
             sync_active = self.sync_active
@@ -509,8 +532,7 @@ class MediaOptimizer:
             command = ["nice", "-n", "19", *command]
 
         LOG_DIR.mkdir(parents=True, exist_ok=True)
-        with self._state_lock:
-            self.current_file = source.name
+        self._set_progress("Réencodage en cours", source.name)
         LOGGER.info(
             "Transcoding %s from %sx%s codec=%s to max %sx%s codec=%s",
             source,
@@ -543,8 +565,7 @@ class MediaOptimizer:
             LOGGER.error("ffmpeg or nice is unavailable")
             return False, False
         finally:
-            with self._state_lock:
-                self.current_file = ""
+            self._set_progress("Vérification des médias", "")
 
         if process.returncode != 0 or not temporary.exists():
             LOGGER.error("Transcoding failed for %s with code %s", source, process.returncode)
@@ -554,6 +575,38 @@ class MediaOptimizer:
         remove_thumbnail(target)
         temporary.replace(target)
         return True, False
+
+    def _begin_mutation(self) -> None:
+        with self._state_lock:
+            if self.maintenance_active:
+                return
+        from .scheduler import scheduler
+
+        was_playing = scheduler.begin_media_maintenance()
+        with self._state_lock:
+            self.maintenance_active = True
+            self.playback_paused = was_playing
+
+    def _end_mutation(self) -> None:
+        with self._state_lock:
+            if not self.maintenance_active:
+                return
+            resume_playback = self.playback_paused
+        from .scheduler import scheduler
+
+        try:
+            scheduler.end_media_maintenance(resume_playback)
+        except Exception:
+            LOGGER.exception("Could not restore playback after media maintenance")
+        finally:
+            with self._state_lock:
+                self.maintenance_active = False
+                self.playback_paused = False
+
+    def _set_progress(self, phase: str, current_file: str) -> None:
+        with self._state_lock:
+            self.phase = phase
+            self.current_file = current_file
 
     @staticmethod
     def _manual_target(source: Path) -> Path:

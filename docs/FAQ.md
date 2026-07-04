@@ -68,7 +68,9 @@ Synchroniser maintenant
 
 Les vidéos dépassant `2560×1440` sont réduites pour améliorer la fluidité de lecture.
 
-Le traitement attend qu'aucune vidéo ne soit en cours de lecture. Une conversion 4K peut prendre longtemps sur le Raspberry Pi.
+Si une vidéo est en cours de lecture, AVP-Py la suspend pendant le traitement puis la relance lorsque celui-ci est terminé. Une lecture déjà arrêtée avant le traitement reste arrêtée.
+
+Une conversion 4K peut prendre longtemps sur le Raspberry Pi. Son état et le nom du fichier en cours sont actualisés automatiquement dans `Configuration des dossiers` et `Gestion des médias`.
 
 Consulte l'état dans `Configuration des dossiers` ou `Gestion des médias`, puis vérifie les erreurs avec :
 

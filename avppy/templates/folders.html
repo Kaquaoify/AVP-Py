@@ -52,11 +52,7 @@
     <a id="manual-manager-link" class="button" href="/settings/media">Gérer les médias</a>
     <a class="button secondary" href="/settings">Retour</a>
   </div>
-  {% if optimizer_status.processing %}
-    <p class="notice">Réencodage en cours : {{ optimizer_status.current_file or "analyse des médias" }}.</p>
-  {% elif optimizer_status.pending_modes %}
-    <p class="notice">Réencodage en attente de l'arrêt de la lecture.</p>
-  {% endif %}
+  {% include "_optimizer_status.html" %}
   {% if message %}
     <pre class="console">{{ message }}</pre>
   {% endif %}

@@ -1,0 +1,24 @@
+<section
+  class="notice optimizer-live-status"
+  data-optimizer-status
+  aria-live="polite"
+  {% if not optimizer_status.processing and not optimizer_status.pending_modes and not optimizer_status.last_message %}hidden{% endif %}
+>
+  <strong data-optimizer-title>
+    {% if optimizer_status.processing %}
+      {% if optimizer_status.current_file %}
+        {{ optimizer_status.phase or "Traitement en cours" }} : {{ optimizer_status.current_file }}
+      {% else %}
+        {{ optimizer_status.phase or "Traitement en cours" }}
+      {% endif %}
+    {% elif optimizer_status.pending_modes %}
+      Traitement en attente
+    {% else %}
+      {{ optimizer_status.last_message }}
+    {% endif %}
+  </strong>
+  <span data-optimizer-detail {% if not optimizer_status.playback_paused %}hidden{% endif %}>
+    Lecture suspendue automatiquement. Elle reprendra à la fin du traitement.
+  </span>
+</section>
+<script src="/static/optimizer-status.js" defer></script>

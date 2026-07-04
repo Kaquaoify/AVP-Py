@@ -336,6 +336,20 @@ dd {
   background: #3a281f;
 }
 
+.optimizer-live-status {
+  display: grid;
+  gap: 3px;
+}
+
+.optimizer-live-status[hidden],
+.optimizer-live-status [hidden] {
+  display: none;
+}
+
+.optimizer-live-status span {
+  color: var(--muted);
+}
+
 .source-picker {
   display: grid;
   gap: 14px;

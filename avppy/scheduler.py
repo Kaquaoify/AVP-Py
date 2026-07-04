@@ -22,6 +22,7 @@ class Scheduler:
         self.last_reboot_key = ""
         self.playback_active = False
         self.manual_pause = False
+        self.maintenance_pause = False
         self.display_state_key: tuple[str, bool] | None = None
         self.display_command_ok = False
         self.display_retry_at = 0.0
@@ -63,7 +64,7 @@ class Scheduler:
                 LOGGER.info("Scheduled playback stopped")
             return
 
-        if self.manual_pause:
+        if self.manual_pause or self.maintenance_pause:
             return
 
         if not self.playback_active or not player.is_playlist_active():
@@ -90,6 +91,44 @@ class Scheduler:
         self.manual_pause = False
         self.playback_active = playback_started
         LOGGER.info("Manual playback pause disabled")
+
+    def begin_media_maintenance(self) -> bool:
+        if self.maintenance_pause:
+            return False
+        was_playing = player.is_playlist_active()
+        self.maintenance_pause = True
+        if was_playing:
+            self.playback_active = False
+            player.pause_to_black()
+            LOGGER.info("Playback suspended for media maintenance")
+        else:
+            LOGGER.info("Media maintenance started while playback was inactive")
+        return was_playing
+
+    def end_media_maintenance(self, resume_playback: bool) -> None:
+        if not self.maintenance_pause:
+            return
+        self.maintenance_pause = False
+        if not resume_playback:
+            LOGGER.info("Media maintenance finished; playback was already inactive")
+            return
+        if self.manual_pause:
+            LOGGER.info("Media maintenance finished; playback remains manually paused")
+            return
+
+        config = load_config()
+        if not self._is_playback_time(config, datetime.now()):
+            self.playback_active = False
+            LOGGER.info("Media maintenance finished outside the playback schedule")
+            return
+
+        result = player.play_playlist(config["local_media_dir"], config)
+        self.playback_active = result.started
+        LOGGER.info(
+            "Media maintenance finished; playback resume started=%s media_count=%s",
+            result.started,
+            result.media_count,
+        )
 
     def _handle_display(self, config: dict, now: datetime) -> None:
         if not config.get("cec_schedule_enabled", False):

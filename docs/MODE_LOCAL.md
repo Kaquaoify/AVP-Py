@@ -71,7 +71,7 @@ Formats vidéo acceptés :
 
 Si un fichier porte déjà le même nom, AVP-Py ajoute automatiquement un suffixe pour éviter d'écraser le fichier existant.
 
-Si une vidéo dépasse `2560×1440`, AVP-Py affiche un avertissement et place sa réduction de résolution dans la file d'attente. Le traitement démarre lorsque la lecture est inactive.
+Si une vidéo dépasse `2560×1440`, AVP-Py affiche un avertissement et place sa réduction de résolution dans la file d'attente. Si une vidéo est en cours de lecture, elle est suspendue pendant le traitement puis relancée automatiquement.
 
 Le bouton `Réencodage manuel` permet de vérifier à nouveau toute la bibliothèque. Voir [Optimisation de la résolution des médias](OPTIMISATION_MEDIAS.md).
 
