@@ -53,6 +53,8 @@ Elle permet de :
 - accéder aux paramètres ;
 - vérifier l'heure interne du Raspberry Pi en bas à droite.
 
+Pendant une plage horaire active, le bouton `Pause` maintient le fond noir et bloque les relances automatiques. Utilise `Play` pour reprendre immédiatement. Si tu ne reprends pas manuellement, la pause est réinitialisée à la fin de la plage afin que la prochaine programmation démarre normalement.
+
 Si aucun média n'est disponible, la page indique qu'aucun média local n'est présent.
 
 ## 3. Choisir la source des médias

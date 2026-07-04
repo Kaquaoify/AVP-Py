@@ -21,6 +21,7 @@ class Scheduler:
         self.last_sync_key = ""
         self.last_reboot_key = ""
         self.playback_active = False
+        self.manual_pause = False
         self.display_state_key: tuple[str, bool] | None = None
         self.display_command_ok = False
         self.display_retry_at = 0.0
@@ -54,7 +55,18 @@ class Scheduler:
 
     def _handle_playback(self, config: dict, now: datetime) -> None:
         should_play = self._is_playback_time(config, now)
-        if should_play and (not self.playback_active or not player.is_playlist_active()):
+        if not should_play:
+            self.manual_pause = False
+            if self.playback_active:
+                player.stop_to_black()
+                self.playback_active = False
+                LOGGER.info("Scheduled playback stopped")
+            return
+
+        if self.manual_pause:
+            return
+
+        if not self.playback_active or not player.is_playlist_active():
             result = player.play_playlist(config["local_media_dir"], config)
             self.playback_active = result.started
             if result.started:
@@ -69,10 +81,15 @@ class Scheduler:
                 )
             return
 
-        if not should_play and self.playback_active:
-            player.stop_to_black()
-            self.playback_active = False
-            LOGGER.info("Scheduled playback stopped")
+    def pause_manually(self) -> None:
+        self.manual_pause = True
+        self.playback_active = False
+        LOGGER.info("Manual playback pause enabled")
+
+    def resume_manually(self, playback_started: bool) -> None:
+        self.manual_pause = False
+        self.playback_active = playback_started
+        LOGGER.info("Manual playback pause disabled")
 
     def _handle_display(self, config: dict, now: datetime) -> None:
         if not config.get("cec_schedule_enabled", False):

@@ -46,6 +46,8 @@ Dans cet exemple, AVP-Py diffuse les vidéos entre 08:00 et 20:00, uniquement le
 
 En dehors de cette plage, la lecture automatique s'arrête.
 
+Le bouton `Pause` de la page d'accueil suspend manuellement la lecture, même pendant une plage active. La lecture reste arrêtée sur un fond noir jusqu'à ce que tu appuies sur `Play` ou que la plage horaire active se termine. La pause manuelle est réinitialisée avant la prochaine plage active.
+
 ## 3. Piloter automatiquement le téléviseur
 
 La case suivante relie le contrôle HDMI-CEC aux horaires :

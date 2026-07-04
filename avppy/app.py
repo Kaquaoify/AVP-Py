@@ -181,10 +181,10 @@ async def control(request: Request):
     action = str(form.get("action", ""))
     if action == "play":
         result = player.play_playlist(config["local_media_dir"], config)
-        scheduler.playback_active = result.started
+        scheduler.resume_manually(result.started)
     elif action == "pause":
+        scheduler.pause_manually()
         player.pause_to_black()
-        scheduler.playback_active = False
     elif action == "next":
         player.next()
     elif action == "previous":
