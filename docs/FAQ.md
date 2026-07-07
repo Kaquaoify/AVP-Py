@@ -136,6 +136,36 @@ bash /opt/avp-py/app/scripts/update.sh
 
 ---
 
+## Pourquoi le bouton de mise à jour web ne fonctionne-t-il pas ?
+
+Le bouton `Lancer la mise à jour` se trouve dans `Paramètres > Admin`.
+
+Il nécessite :
+
+- une session administrateur active ;
+- le mot de passe de confirmation `1234` ;
+- les droits `sudo` installés par AVP-Py.
+
+Si le bouton échoue, relance une fois la mise à jour en SSH pour réinstaller les droits :
+
+```bash
+bash /opt/avp-py/app/scripts/update.sh
+```
+
+Ensuite, le bouton web doit pouvoir lancer :
+
+```bash
+sudo -n /bin/bash /opt/avp-py/app/scripts/update.sh
+```
+
+Les logs de la mise à jour web sont écrits dans :
+
+```bash
+/var/lib/avp-py/logs/update.log
+```
+
+---
+
 ## Le Raspberry Pi arrive chez un client sans Wi-Fi connu, comment le connecter ?
 
 Si aucun réseau connu n'est disponible au démarrage, AVP-Py démarre un hotspot de configuration.

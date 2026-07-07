@@ -12,8 +12,16 @@ else
   SUDO=""
 fi
 
+run_as_owner() {
+  if [[ "${EUID}" -eq 0 && "${RUN_USER}" != "root" ]]; then
+    sudo -u "${RUN_USER}" "$@"
+  else
+    "$@"
+  fi
+}
+
 if [[ "${AVP_UPDATE_REEXEC:-0}" != "1" ]]; then
-  git -C "${INSTALL_DIR}" pull --ff-only
+  run_as_owner git -C "${INSTALL_DIR}" pull --ff-only
   export AVP_UPDATE_REEXEC=1
   exec bash "${INSTALL_DIR}/scripts/update.sh"
 fi
@@ -27,9 +35,10 @@ ${SUDO} systemctl start NetworkManager.service
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/systemctl restart avahi-daemon.service"
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/hostnamectl set-hostname *"
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/nmcli"
+  echo "${RUN_USER} ALL=NOPASSWD: /bin/bash ${INSTALL_DIR}/scripts/update.sh, /usr/bin/bash ${INSTALL_DIR}/scripts/update.sh"
 } | ${SUDO} tee /etc/sudoers.d/avp-py >/dev/null
 ${SUDO} chmod 0440 /etc/sudoers.d/avp-py
-"${INSTALL_DIR}/.venv/bin/pip" install -r "${INSTALL_DIR}/requirements.txt"
+run_as_owner "${INSTALL_DIR}/.venv/bin/pip" install -r "${INSTALL_DIR}/requirements.txt"
 
 TMP_SERVICE="$(mktemp)"
 sed \

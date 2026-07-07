@@ -152,6 +152,11 @@ button:disabled {
   margin: 40px auto;
 }
 
+.admin-update-panel,
+.update-progress-panel {
+  margin-top: 24px;
+}
+
 .volume {
   display: flex;
   align-items: center;

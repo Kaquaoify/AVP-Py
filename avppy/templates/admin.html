@@ -7,15 +7,38 @@
     <input name="device_name" value="{{ config.device_name }}" maxlength="63" required>
   </label>
   <p class="muted">
-    Ce nom définit aussi l'adresse réseau :
+    Ce nom d&eacute;finit aussi l'adresse r&eacute;seau :
     <code>http://{{ config.device_name }}.local:8000</code>.
-    Les espaces et accents seront convertis en tirets et caractères simples.
+    Les espaces et accents seront convertis en tirets et caract&egrave;res simples.
   </p>
   <label>Nouveau mot de passe <input name="new_password" type="password" autocomplete="new-password"></label>
   <div class="button-row">
     <button type="submit">Sauvegarder</button>
     <a class="button secondary" href="/settings">Retour</a>
   </div>
-  {% if message %}<p class="success">{{ message }}</p>{% endif %}
+  {% if message %}
+    <p class="{{ 'success' if message_ok else 'error' }}">{{ message }}</p>
+  {% endif %}
 </form>
+
+<section class="panel stack admin-update-panel">
+  <h1>Mise &agrave; jour de l'application</h1>
+  <p class="muted">
+    Lance le script <code>scripts/update.sh</code> depuis l'interface web.
+    Le mot de passe demand&eacute; ici sert uniquement &agrave; &eacute;viter un appui involontaire.
+  </p>
+  {% if update_status.pending %}
+    <p class="notice warning">{{ update_status.message }}</p>
+  {% endif %}
+  <form method="post" action="/settings/admin/update" class="stack" onsubmit="return confirm('Lancer la mise \u00e0 jour de AVP-Py maintenant ?');">
+    <label>Mot de passe de confirmation
+      <input name="update_password" type="password" inputmode="numeric" autocomplete="off" required>
+    </label>
+    <div class="button-row">
+      <button class="reboot-button" type="submit" {% if update_status.pending %}disabled{% endif %}>
+        Lancer la mise &agrave; jour
+      </button>
+    </div>
+  </form>
+</section>
 {% endblock %}

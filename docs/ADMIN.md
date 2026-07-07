@@ -12,7 +12,8 @@ La page `Admin` permet de configurer :
 
 - le nom de l'appareil ;
 - l'adresse locale en `.local` ;
-- le mot de passe administrateur.
+- le mot de passe administrateur ;
+- la mise à jour de l'application.
 
 Le bandeau supérieur de toutes les pages authentifiées permet également de redémarrer le Raspberry Pi.
 
@@ -70,7 +71,33 @@ Dans `Nouveau mot de passe` :
 
 AVP-Py n'utilise pas de nom d'utilisateur : l'accès administrateur se fait uniquement par mot de passe.
 
-## 3. Après changement du nom
+## 3. Lancer une mise à jour depuis l'interface web
+
+La page `Admin` contient un bloc `Mise à jour de l'application`.
+
+Pour lancer une mise à jour :
+
+1. saisis le mot de passe de confirmation ;
+2. clique sur `Lancer la mise à jour` ;
+3. attends que la page revienne automatiquement sur l'administration.
+
+Le mot de passe de confirmation par défaut est :
+
+```text
+1234
+```
+
+Ce mot de passe ne remplace pas le mot de passe administrateur. Il sert seulement à éviter un clic involontaire.
+
+La mise à jour lance le script :
+
+```bash
+/opt/avp-py/app/scripts/update.sh
+```
+
+Le service AVP-Py redémarre à la fin de la mise à jour.
+
+## 4. Après changement du nom
 
 Après modification du nom de l'appareil, l'ancienne adresse `.local` peut ne plus répondre.
 
@@ -119,7 +146,15 @@ L'action exige une session administrateur AVP-Py active. Elle utilise :
 sudo -n /usr/bin/systemctl reboot
 ```
 
-Les scripts d'installation et de mise à jour ajoutent uniquement la commande `systemctl reboot` aux autorisations `sudo` sans mot de passe d'AVP-Py. Aucun argument fourni par le navigateur n'est transmis à la commande système.
+Les scripts d'installation et de mise à jour ajoutent la commande `systemctl reboot` aux autorisations `sudo` sans mot de passe d'AVP-Py. Aucun argument fourni par le navigateur n'est transmis à la commande système.
+
+Ils autorisent aussi le lancement du script de mise à jour AVP-Py via une commande fixe :
+
+```bash
+sudo -n /bin/bash /opt/avp-py/app/scripts/update.sh
+```
+
+Aucun chemin fourni par le navigateur n'est transmis à cette commande.
 
 ## Exemples
 

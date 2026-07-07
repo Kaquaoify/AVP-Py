@@ -14,6 +14,24 @@ Ne mets pas `sudo` devant cette commande.
 
 Le script utilise lui-même les droits administrateur quand c'est nécessaire, mais le `git pull` doit être fait avec l'utilisateur propriétaire de l'installation.
 
+## Depuis l'interface web
+
+Si AVP-Py est déjà installé et à jour côté droits système, tu peux aussi lancer la mise à jour depuis :
+
+```text
+Paramètres > Admin > Mise à jour de l'application
+```
+
+Le bouton demande un mot de passe de confirmation :
+
+```text
+1234
+```
+
+Après validation, AVP-Py lance le script de mise à jour, redémarre le service, puis la page revient automatiquement sur l'administration quand le service répond de nouveau.
+
+Si cette méthode échoue après une ancienne installation, fais une mise à jour une fois en SSH avec la commande recommandée. Cela réinstalle les droits `sudo` nécessaires au bouton web.
+
 ## Ce que fait le script
 
 Le script [`scripts/update.sh`](../scripts/update.sh) :

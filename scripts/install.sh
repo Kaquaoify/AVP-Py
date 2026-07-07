@@ -15,6 +15,14 @@ else
   SUDO=""
 fi
 
+run_as_owner() {
+  if [[ "${EUID}" -eq 0 && "${RUN_USER}" != "root" ]]; then
+    sudo -u "${RUN_USER}" "$@"
+  else
+    "$@"
+  fi
+}
+
 install_argon40() {
   case "${AVP_INSTALL_ARGON40,,}" in
     0|false|no|off)
@@ -60,14 +68,14 @@ ${SUDO} mkdir -p "$(dirname "${INSTALL_DIR}")" "${DATA_DIR}/media" "${DATA_DIR}/
 ${SUDO} chown -R "${RUN_USER}:${RUN_USER}" "$(dirname "${INSTALL_DIR}")" "${DATA_DIR}"
 
 if [[ -d "${INSTALL_DIR}/.git" ]]; then
-  git -C "${INSTALL_DIR}" pull --ff-only
+  run_as_owner git -C "${INSTALL_DIR}" pull --ff-only
 else
-  git clone "${REPO_URL}" "${INSTALL_DIR}"
+  run_as_owner git clone "${REPO_URL}" "${INSTALL_DIR}"
 fi
 
-python3 -m venv "${INSTALL_DIR}/.venv"
-"${INSTALL_DIR}/.venv/bin/pip" install --upgrade pip
-"${INSTALL_DIR}/.venv/bin/pip" install -r "${INSTALL_DIR}/requirements.txt"
+run_as_owner python3 -m venv "${INSTALL_DIR}/.venv"
+run_as_owner "${INSTALL_DIR}/.venv/bin/pip" install --upgrade pip
+run_as_owner "${INSTALL_DIR}/.venv/bin/pip" install -r "${INSTALL_DIR}/requirements.txt"
 
 ${SUDO} usermod -aG audio,video,input,render "${RUN_USER}" || true
 {
@@ -75,6 +83,7 @@ ${SUDO} usermod -aG audio,video,input,render "${RUN_USER}" || true
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/systemctl restart avahi-daemon.service"
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/hostnamectl set-hostname *"
   echo "${RUN_USER} ALL=NOPASSWD: /usr/bin/nmcli"
+  echo "${RUN_USER} ALL=NOPASSWD: /bin/bash ${INSTALL_DIR}/scripts/update.sh, /usr/bin/bash ${INSTALL_DIR}/scripts/update.sh"
 } | ${SUDO} tee /etc/sudoers.d/avp-py >/dev/null
 ${SUDO} chmod 0440 /etc/sudoers.d/avp-py
 

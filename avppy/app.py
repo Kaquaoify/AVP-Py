@@ -55,6 +55,7 @@ configure_logging()
 LOGGER = logging.getLogger(__name__)
 
 PACKAGE_DIR = Path(__file__).parent
+UPDATE_SCRIPT = PACKAGE_DIR.parent / "scripts" / "update.sh"
 templates = Jinja2Templates(directory=str(PACKAGE_DIR / "templates"))
 
 app = FastAPI(title="AVP-Py")
@@ -711,7 +712,13 @@ def admin_page(request: Request, message: str = ""):
         return login_redirect
     return templates.TemplateResponse(
         "admin.html",
-        {"request": request, "config": config, "message": message},
+        {
+            "request": request,
+            "config": config,
+            "message": message,
+            "message_ok": True,
+            "update_status": system_controller.update_status(),
+        },
     )
 
 
@@ -739,7 +746,62 @@ async def save_admin(request: Request):
     config = update_config(changes)
     return templates.TemplateResponse(
         "admin.html",
-        {"request": request, "config": config, "message": message},
+        {
+            "request": request,
+            "config": config,
+            "message": message,
+            "message_ok": result.ok,
+            "update_status": system_controller.update_status(),
+        },
+    )
+
+
+@app.post("/settings/admin/update", response_class=HTMLResponse)
+async def update_application(request: Request):
+    config = load_config()
+    if login_redirect := require_login(request, config):
+        return login_redirect
+    form = await request.form()
+    update_password = str(form.get("update_password", ""))
+    if update_password != "1234":
+        message = "Mot de passe de mise \u00e0 jour incorrect."
+        return templates.TemplateResponse(
+            "admin.html",
+            {
+                "request": request,
+                "config": config,
+                "message": message,
+                "message_ok": False,
+                "update_status": system_controller.update_status(),
+            },
+            status_code=403,
+        )
+
+    accepted, message = system_controller.request_update(
+        UPDATE_SCRIPT,
+        LOG_DIR / "update.log",
+    )
+    if not accepted:
+        return templates.TemplateResponse(
+            "admin.html",
+            {
+                "request": request,
+                "config": config,
+                "message": message,
+                "message_ok": False,
+                "update_status": system_controller.update_status(),
+            },
+            status_code=503,
+        )
+
+    return templates.TemplateResponse(
+        "updating.html",
+        {
+            "request": request,
+            "config": config,
+            "message": message,
+        },
+        status_code=202,
     )
 
 
@@ -773,5 +835,8 @@ def health() -> dict:
         "optimization": {
             "count": optimization["count"],
             **optimizer_status,
+        },
+        "system": {
+            "update": system_controller.update_status(),
         },
     }
