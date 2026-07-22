@@ -5,7 +5,6 @@ import os
 import re
 import subprocess
 import threading
-import time
 import unicodedata
 from dataclasses import dataclass
 from typing import Any
@@ -29,7 +28,10 @@ class NetworkController:
         self.thread: threading.Thread | None = None
         self.stop_event = threading.Event()
         self.setup_active = False
+        self.connecting_to_wifi = False
         self.last_error = ""
+        self._state_lock = threading.Lock()
+        self._command_lock = threading.RLock()
 
     def start(self) -> None:
         if self.thread and self.thread.is_alive():
@@ -42,6 +44,7 @@ class NetworkController:
         return {
             "enabled": config.get("network_setup_enabled", True),
             "setup_active": self.setup_active,
+            "connecting_to_wifi": self.is_connecting_to_wifi(),
             "last_error": self.last_error,
             "connected": has_network_connection(),
             "local_ips": local_ip_addresses(),
@@ -60,7 +63,8 @@ class NetworkController:
         while not self.stop_event.is_set():
             config = load_config()
             if not config.get("network_setup_enabled", True):
-                self.stop_hotspot()
+                if not self.is_connecting_to_wifi():
+                    self.stop_hotspot()
                 self.stop_event.wait(30)
                 continue
 
@@ -71,6 +75,10 @@ class NetworkController:
                 delay_done = True
 
             try:
+                if self.is_connecting_to_wifi():
+                    self.stop_event.wait(5)
+                    continue
+
                 if has_network_connection():
                     if self.setup_active:
                         self.stop_hotspot()
@@ -84,7 +92,24 @@ class NetworkController:
 
             self.stop_event.wait(30)
 
+    def is_connecting_to_wifi(self) -> bool:
+        with self._state_lock:
+            return self.connecting_to_wifi
+
+    def _set_connecting_to_wifi(self, value: bool) -> None:
+        with self._state_lock:
+            self.connecting_to_wifi = value
+
     def start_hotspot(self, config: dict[str, Any]) -> CommandResult:
+        if self.is_connecting_to_wifi():
+            return CommandResult(False, "Connexion Wi-Fi en cours, relance du hotspot bloquee.")
+
+        with self._command_lock:
+            if self.is_connecting_to_wifi():
+                return CommandResult(False, "Connexion Wi-Fi en cours, relance du hotspot bloquee.")
+            return self._start_hotspot_unlocked(config)
+
+    def _start_hotspot_unlocked(self, config: dict[str, Any]) -> CommandResult:
         interface = config.get("network_interface", "wlan0")
         ssid = setup_ssid(config)
         password = config.get("setup_wifi_password", "avpsetup123")
@@ -107,16 +132,50 @@ class NetworkController:
             ],
             timeout=45,
         )
+        if result.ok:
+            run_nmcli(["connection", "modify", SETUP_CONNECTION_NAME, "connection.autoconnect", "no"], check=False)
         self.setup_active = result.ok
         if not result.ok:
             LOGGER.error("Could not start setup hotspot: %s", result.output)
         return result
 
     def stop_hotspot(self) -> CommandResult:
+        with self._command_lock:
+            return self._stop_hotspot_unlocked()
+
+    def _stop_hotspot_unlocked(self) -> CommandResult:
         LOGGER.info("Stopping setup hotspot")
         result = run_nmcli(["connection", "down", SETUP_CONNECTION_NAME], check=False)
+        run_nmcli(["connection", "modify", SETUP_CONNECTION_NAME, "connection.autoconnect", "no"], check=False)
         self.setup_active = False
         return result
+
+    def connect_wifi(self, ssid: str, password: str, interface: str) -> CommandResult:
+        ssid = ssid.strip()
+        if not ssid:
+            return CommandResult(False, "Le SSID est vide.")
+
+        with self._command_lock:
+            self._set_connecting_to_wifi(True)
+            try:
+                self._stop_hotspot_unlocked()
+                args = ["device", "wifi", "connect", ssid, "ifname", interface]
+                if password:
+                    args.extend(["password", password])
+
+                result = run_nmcli(args, timeout=60)
+                if result.ok:
+                    self.setup_active = False
+                    self.last_error = ""
+                    LOGGER.info("Connected to Wi-Fi SSID %s", ssid)
+                else:
+                    LOGGER.error("Wi-Fi connection failed for %s: %s", ssid, result.output)
+                    config = load_config()
+                    hotspot_result = self._start_hotspot_unlocked(config)
+                    self.last_error = "" if hotspot_result.ok else hotspot_result.output
+                return result
+            finally:
+                self._set_connecting_to_wifi(False)
 
 
 def setup_ssid(config: dict[str, Any]) -> str:
@@ -244,22 +303,7 @@ def scan_wifi() -> list[dict[str, str]]:
 
 
 def connect_wifi(ssid: str, password: str, interface: str) -> CommandResult:
-    if not ssid.strip():
-        return CommandResult(False, "Le SSID est vide.")
-
-    network.stop_hotspot()
-    args = ["device", "wifi", "connect", ssid, "ifname", interface]
-    if password:
-        args.extend(["password", password])
-
-    result = run_nmcli(args, timeout=60)
-    if result.ok:
-        LOGGER.info("Connected to Wi-Fi SSID %s", ssid)
-    else:
-        LOGGER.error("Wi-Fi connection failed for %s: %s", ssid, result.output)
-        config = load_config()
-        network.start_hotspot(config)
-    return result
+    return network.connect_wifi(ssid, password, interface)
 
 
 def run_nmcli(args: list[str], timeout: int = 15, check: bool = True) -> CommandResult:

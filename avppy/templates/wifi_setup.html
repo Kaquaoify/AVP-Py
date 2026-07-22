@@ -13,6 +13,9 @@
         <div class="status-line embedded">
           <span>Hotspot: {{ network_status.hotspot_ssid }}</span>
           <span>Interface: {{ network_status.interface }}</span>
+          {% if network_status.connecting_to_wifi %}
+            <span>Connexion Wi-Fi: en cours</span>
+          {% endif %}
         </div>
         <form method="post" action="/setup/wifi" class="stack">
           <label>Réseau détecté
@@ -39,4 +42,3 @@
     </main>
   </body>
 </html>
-
