@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import threading
+import time
 import unicodedata
 from dataclasses import dataclass
 from typing import Any
@@ -113,6 +114,11 @@ class NetworkController:
         interface = config.get("network_interface", "wlan0")
         ssid = setup_ssid(config)
         password = config.get("setup_wifi_password", "avpsetup123")
+        prepared = prepare_wifi_device(interface)
+        if not prepared.ok:
+            self.setup_active = False
+            LOGGER.error("Could not prepare Wi-Fi device for setup hotspot: %s", prepared.output)
+            return prepared
 
         LOGGER.info("Starting setup hotspot %s on %s", ssid, interface)
         run_nmcli(["connection", "down", SETUP_CONNECTION_NAME], check=False)
@@ -159,6 +165,11 @@ class NetworkController:
             self._set_connecting_to_wifi(True)
             try:
                 self._stop_hotspot_unlocked()
+                prepared = prepare_wifi_device(interface)
+                if not prepared.ok:
+                    LOGGER.error("Could not prepare Wi-Fi device for client connection: %s", prepared.output)
+                    return prepared
+
                 args = ["device", "wifi", "connect", ssid, "ifname", interface]
                 if password:
                     args.extend(["password", password])
@@ -278,6 +289,36 @@ def device_status() -> list[dict[str, str]]:
                 }
             )
     return devices
+
+
+def wifi_device_status(interface: str) -> dict[str, str] | None:
+    for row in device_status():
+        if row.get("device") == interface and row.get("type") == "wifi":
+            return row
+    return None
+
+
+def prepare_wifi_device(interface: str, timeout: int = 12) -> CommandResult:
+    if os.name == "nt":
+        return CommandResult(False, "nmcli non disponible sous Windows.")
+
+    run_nmcli(["radio", "wifi", "on"], check=False)
+    run_nmcli(["device", "set", interface, "managed", "yes"], check=False)
+
+    deadline = time.monotonic() + timeout
+    last_status = ""
+    while time.monotonic() < deadline:
+        status = wifi_device_status(interface)
+        if status is None:
+            last_status = f"Interface Wi-Fi {interface} introuvable dans NetworkManager."
+        else:
+            state = status.get("state", "")
+            last_status = f"Interface Wi-Fi {interface} état NetworkManager: {state}."
+            if state not in {"unavailable", "unmanaged"}:
+                return CommandResult(True, last_status)
+        time.sleep(1)
+
+    return CommandResult(False, last_status or f"Interface Wi-Fi {interface} indisponible.")
 
 
 def scan_wifi() -> list[dict[str, str]]:
